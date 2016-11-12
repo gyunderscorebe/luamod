@@ -129,41 +129,18 @@ function load(self,name,strict)
     
     --is the file actually there?
     if f == nil then return nil,"file not found" end
+    
     --iterate through the file
     for str in f:lines() do
         --try to split the line into fields
-	  local ib,ie,ia,_,co,cou,coun
-          if str:sub(1,1) == '"' then 
-	    local strr = str:lower():gsub('","', "#")
-	    str = string.sub(strr,2,string.len(str)-3)
-	    local x = ""
-	    local count = 1
-	    local var = {}
-	    for i=1,string.len(str) do
-	      local y = string.sub(str,i,i)
-	      if y ~= "#" then x = x .. string.sub(str,i,i)
-	      else
-		var[count] = x
-		count = count + 1
-		x = ""
-	      end
-	    end
-	    ib = var[1]
-	    ie = var[2]
-	    ia = var[3]
-	    co = var[5]
-	    cou = var[6]
-	    coun = string.sub(x,1,string.len(x)-1)
-	end
-      
+        ib,ie,ia,_,co,cou,coun = 
+               str:match('^"(%d+)","(%d+)","(%a+)","(%d+)","(%a%a)","(%a%a%a?)","(.*)"')
         --check that it was a well-formed line
         if ib == nil or ie == nil or co == nil then
             --unparseable lines are ignored unless they start with '"'
             --this prevents new-format lines getting ignored for ever
             --note we must skip lines where co=nil lest we return it
-            if str:sub(1,1) == '"' then 
-	      return nil,"bad line in file" 
-	    end
+            if str:sub(1,1) == '"' then return nil,"bad line in file" end
         else
             --parseable lines belong in the table
             ibn, ien = tonumber(ib), tonumber(ie)
