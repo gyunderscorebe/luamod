@@ -59,7 +59,7 @@ webnet.load = function (self,name,strict)
     cotab[#cotab+1] = "-- UNALLOCATED"
     
     self.iptab, self.cotab = iptab, cotab
-
+    
     return self
 end
 
@@ -113,10 +113,10 @@ webnet.geo = function (self, cn)
         i = i + 1
     end
   -- }
-    return { country = country, name = getname(cn), ip = getip(cn) }
+    return { iso = iso, country = country, ip = getip(cn) }
 end
 
-webnet.new = function (name,strict)
+webnet.new = function (self,name,strict)
     local self = setmetatable({},{__index=webnet})
     --local self = setmetatable({},{__index=_M})   
     if type(name) == 'string' then 

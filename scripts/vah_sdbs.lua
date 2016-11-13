@@ -1,4 +1,4 @@
-PLUGIN_NAME = "vah_sdbs OpenSource version"
+PLUGIN_NAME = "vah_sdbs open source version"
 PLUGIN_AUTHOR = "SDBS" -- sensor-dream
 PLUGIN_VERSION = "1.0.4" -- black lua mod
 
@@ -15,7 +15,8 @@ __sdbs = {
         gema_mode_is_turned_on = tru,
         configrandommaprot = false --I like randomness
     },
-    webnet = nil
+    webnet = nil,
+    player = nil
 }
 
 -- Задаем пути поиска
@@ -32,7 +33,8 @@ require("webnet")
 
 __sdbs.player = {
     flag = {
-        reset = function(cn, action, flag)
+        time = 5,
+        reset = function(self,cn, action, flag)
             if action == FA_DROP or action == FA_LOST then
                 flagaction(cn, FA_RESET, flag)
             end
@@ -40,10 +42,38 @@ __sdbs.player = {
     },
     info = {
         data = {},
-        geo = function (self, cn) 
-            if cn ~= nil then
-                if self.data[cn] ~=nil and self.data[cn].geo ~= nil then
-                    return self.data[cn].geo
+        config = {
+        },
+        inituser = function (self, cn, enet )
+            if enet ~= nil and cn >= 0 and cn < maxclient() then
+                local data = enet.geo(enet,cn)
+                print (data.iso)
+                if self.data[cn] == nil then
+                    self.data[cn] = {
+                        name = getname(cn),
+                        iso = data.iso,
+                        country = data.country,
+                        ip = data.ip,
+                        role = isadmin(cn),
+                        time = {
+                            start = getsvtick(),
+                            gametime = function ()
+                                return getsvtick() - self.start
+                            end
+                        }
+                    }
+                    return self.data[cn]
+                end
+            end
+            return nil;
+        end,
+        unsetuser = function (self,cn)
+           if self.data[cn] ~=nil then self.data[cn] = nil end
+        end,
+        get = function (self, cn) 
+            if cn ~= nil and isconnected(cn) then
+                if self.data[cn] ~=nil then
+                    return self.data[cn]
                 end
             end
             return nil
@@ -61,6 +91,9 @@ __sdbs.player = {
                 end
             end
             return nil
+        end,
+        nameadmin = function (self, cn)
+            return slef.cnadmin(cn) or nil
         end
     }
 }
@@ -76,7 +109,10 @@ sdbs = __sdbs.new();
 -- lookup global function
 
 function onInit()
-    sdbs.webnet = webnet.new(sdbs.path.sdbs.. "IpToCountry.csv")
+    sdbs.webnet = webnet:new(sdbs.path.sdbs.."IpToCountry.csv")
+    --sdbs.webnet = webnet:new()
+    --sdbs.webnet:load(sdbs.path.sdbs .. "IpToCountry.csv")
+    --if sdbs.webnet ~= nil then print ("Init webnet") else print ("Not init webnet") end
 end
 
 function onDestroy()
@@ -88,27 +124,28 @@ end
 function onMapEnd()
 end
 
-function onPlayerConnect(cn)
-    say("\f3Hello \fI" .. getname(cn) .. "!") 
-    sdbs.player.info.data[cn] = { geo = sdbs.webnet:geo(cn) }
-    local geo = sdbs.player.info:geo(cn)
-    if geo ~= nil then
+function onPlayerConnect(cn, reason)
+    local info = sdbs.player.info:inituser(cn,sdbs.webnet)
+    --local info = sdbs.player.info:get(cn)
+    if info ~= nil then
+        -- local config = sdbs.player.info.config
         for i = 0, maxclient() - 1 do
-            --if isconnected(i) and i ~= cn then
+            --if isconnected(i) then
             if isconnected(i) and i ~= cn then
-                if isadmin(tcn) then
-                    say(string.format("\fI%s \f0connected from \fI%s \fIip: \f0%s",geo.name,geo.country,geo.ip,i))
+                if isadmin(i) then
+                    say(string.format("\f1Player \f2%s (\f1%s\f2) \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",info.name,cn,info.country, info.iso ,info.ip),i)
                 else
-                    say(string.format("\fI%s \f0connected from \fI%s",geo.name,geo.country,i))
+                    say(string.format("\f1Player \f2%s (\f1%s\f2) \f1came from \f5%s\f1, \f2%s",info.name,cn,info.country, info.iso),i)
                 end
             end
         end
+        say("\f3Hello \f2 " ..info.name.. " (\f1" ..cn.. "\f2) \f3:D ",cn) 
     end
-    --say("\fI[SERVER INFO]" .. getname(cn) .. "\fIconnected!!! with ip \f0" .. getip(cn) .. "")
 end
 
 function onPlayerDisconnect(cn, reason)
-    sdbs.player.info.data[cn] = nil
+    sdbs.player.info:unsetuser(cn)
+    say("\f3:( Goodbye my baby \f2 " ..getname(cn).. " \f3:(") 
 end
 
 function onPlayerSpawn(cn)
