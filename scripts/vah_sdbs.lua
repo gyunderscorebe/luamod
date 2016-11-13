@@ -40,12 +40,13 @@ __sdbs.player = {
     },
     info = {
         data = {},
-        get = function (self, cn) 
-            if isadmin(cn) then
-                say(string.format("\fI%s \f0connected from \fI%s \fIip: \f0%s",self.data[cn].name,self.data[cn].country,self.data[cn].ip,cn))
-            else
-                say(string.format("\fI%s \f0connected from \fI%s",self.data[cn].name,self.data[cn].country,cn))
+        geo = function (self, cn) 
+            if cn ~= nil then
+                if self.data[cn] ~=nil and self.data[cn].geo ~= nil then
+                    return self.data[cn].geo
+                end
             end
+            return nil
         end,
         isspect = function (team)
             return team > 1 and team <= 4
@@ -89,12 +90,17 @@ end
 
 function onPlayerConnect(cn)
     say("\f3Hello \fI" .. getname(cn) .. "!") 
-    sdbs.player.info.data[cn] = sdbs.webnet:country(cn)
-    --sdbs.player.info:get(cn)
-    for i = 0, maxclient() - 1 do
-        if isconnected(i) and i ~= cn then
-            if isconnected(i) then
-                sdbs.player.info:get(cn)
+    sdbs.player.info.data[cn] = { geo = sdbs.webnet:geo(cn) }
+    local geo = sdbs.player.info:geo(cn)
+    if geo ~= nil then
+        for i = 0, maxclient() - 1 do
+            --if isconnected(i) and i ~= cn then
+            if isconnected(i) and i ~= cn then
+                if isadmin(tcn) then
+                    say(string.format("\fI%s \f0connected from \fI%s \fIip: \f0%s",geo.name,geo.country,geo.ip,i))
+                else
+                    say(string.format("\fI%s \f0connected from \fI%s",geo.name,geo.country,i))
+                end
             end
         end
     end

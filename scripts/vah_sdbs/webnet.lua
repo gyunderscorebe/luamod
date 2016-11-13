@@ -102,7 +102,7 @@ webnet.lookup = function (self,ip)
     return nil,"lookup error"
 end
 
-webnet.country = function (self, cn)
+webnet.geo = function (self, cn)
     local iso, name =  self:lookup(getip(cn))
     -- capitalize all the words and copy result into 'country' {
     local str = split(name, " ")
