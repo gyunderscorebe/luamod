@@ -15,9 +15,11 @@ __sdbs = {
     },
     config = {
         -- Обворачивает имя игрока в spirit-{ <NAME> }->
-        isspirrit = true,
+        isspirrit = false,
         -- Авто ресет флаг при потере сбросе флаг или гибели игрока
         resetflag = true,
+        -- Если игрок сменил имя на другое и хочет стать админом или наоборот -> то выкинуть с сервера
+        disconnectLoLadmin = true,
         -- автоопределение режима игры или карты gema
         autodetectingmode = true,
         configrandommaprot = false --I like randomness
@@ -55,6 +57,7 @@ __sdbs.player = {
     },
     info = {
         data = {},
+        backdata = {},
         config = {
         },
         gametime = function (self,cn)
@@ -65,13 +68,16 @@ __sdbs.player = {
         end,
         inituser = function (self, cn, enet )
             if isconnected(cn) and cn >= 0 and cn < maxclient() then
-                local data = { iso = SDBS_NAN, country = SDBS_NAN, ip = SDBS_NAN }
-                if enet ~= nil then 
-                    data = enet.geo(enet,cn)
-                end    
                 if self.data[cn] == nil then
+                    local data = { iso = SDBS_NAN, country = SDBS_NAN, ip = SDBS_NAN }
+                    if enet ~= nil then 
+                        data = enet.geo(enet,cn)
+                    end
+                    data.name = getname(cn)
                     self.data[cn] = {
-                        name = getname(cn),
+                        cn = cn,
+                        name = data.name,
+                        oldname = data.name,
                         iso = data.iso,
                         country = data.country,
                         ip = data.ip,
@@ -100,13 +106,15 @@ __sdbs.player = {
            if self.data[cn] ~=nil then self.data[cn] = nil end
         end,
         get = function (self, cn) 
-            if cn ~= nil and isconnected(cn) then
+            if isconnected(cn) and cn >= 0 and cn < maxclient() then
                 if self.data[cn] ~=nil then
                     return self.data[cn]
                 end
             end
             return {
+                    cn = SDBS_NAN,
                     name = SDBS_NAN,
+                    oldname = SDBS_NAN,
                     iso = SDBS_NAN,
                     country = SDBS_NAN,
                     ip = SDBS_NAN,
@@ -127,22 +135,50 @@ __sdbs.player = {
                     endtime = SDBS_NAN
             }
         end,
-        isspect = function (team)
-            return team > 1 and team <= 4
+        getname = function(self, cn)
+            local data = self:get(cn)
+            return data.name
         end,
-        isactive = function (team)
-            return team == 0 or team == 1
-        end,
-        cnadmin = function ()
+        getcn = function (self, name)
             for i = 0, maxclient() - 1 do
-                if isadmin(i) then
-                    return i
-                end
+                if self.data[i] ~= nil and self.data[i].name == name then return self.data[i].cn end
             end
             return nil
         end,
-        nameadmin = function (self, cn)
-            return slef.cnadmin(cn) or nil
+        getoldname = function(self, cn)
+            local data = self:get(cn)
+            return data.oldname
+        end,
+        getcountry = function(self, cn)
+            local data = self:get(cn)
+            return data.country
+        end,
+        getiso = function(self, cn)
+            local data = self:get(cn)
+            return data.iso
+        end,
+        getip = function(self, cn)
+            local data = self:get(cn)
+            return data.ip
+        end,
+        isspect = function (self, team)
+            return team > 1 and team <= 4
+        end,
+        isactive = function (self, team)
+            return team == 0 or team == 1
+        end,
+        whoadmin = function ()
+            for i = 0, maxclient() - 1 do
+                if self.data[i] ~= nil and self.data[i].role == CR_ADMIN then
+                    return {
+                        name = self.data[i].name,
+                        iso = self.data[i].iso,
+                        country = self.data[i].country,
+                        cn = self.data[i].cn
+                    }
+                end
+            end
+            return nil
         end
     }
 }
@@ -167,7 +203,7 @@ function onMapStart()
 end
 
 function onMapEnd()
-    say("\f0 hg!  \fEThanks all!")
+    say("\f0HG!  \fEThanks all!")
 end
 
 --(string map_name, int game_mode)
@@ -206,20 +242,31 @@ end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnectAfter(cn,reason)
+    sdbs.player.info:unsetuser(cn)
 end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnect(cn, reason)
-    say(string.format("\f3:( Goodbye my baby \f2s% \f3:("),(sdbs.player.info:get(cn)).name) 
-    sdbs.player.info:unsetuser(cn)
+    say(string.format("\f3:( Goodbye my baby \f2s% \f3:("),sdbs.player.info:getname(cn)) 
 end
 
 --(int actor_cn, int new_role, string hash, int adminpwd_line, bool player_is_connecting)
 function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
-    if new_role == CR_ADMIN then
-        (sdbs.player.info.get(cn)).role = CR_ADMIN
+    print (sdbs.player.info:getname(cn))
+    print (sdbs.player.info:getoldname(cn))
+    print(getname(cn))
+    if (sdbs.player.info:getoldname(cn)) == (getname(cn)) then
+        print("compare")
+        if new_role == CR_ADMIN then
+            sdbs.player.info.data[cn].role = CR_ADMIN
+            print("role ADMIN")
+        else
+            sdbs.player.info.data[cn].role = CR_DEFAULT
+            print("role DEFAULT")
+        end
     else
-        (sdbs.player.info.get(cn)).role = CR_DEFAULT
+        print("not compare")
+        if sdbs.config.disconnectLoLadmin then disconnect(cn, 1) else setrole(cn, CR_DEFAULT) end
     end
 end
 

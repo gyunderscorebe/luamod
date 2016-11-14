@@ -56,6 +56,20 @@ function rtrim(s) --remove trailing whitespace
     return s:sub(1, n)
 end
 
+function compare(str1, str2)
+  return (str1 == str2)
+end
+
+function icompare(str1, str2)
+  return (string.toupper(str1) == string.toupper(str2))
+end
+
+function reversenumber(num)
+  local str = tostring(num) -- преобразуем число в строку
+  str = string.reverse(str) -- переворачиваем строку
+  return tonumber(str) -- преобразуем обратно в число и возвращаем
+end
+
 function isTeammode(mode) -- gamemode
     if mode == 0 or mode == 4 or mode == 5 or mode == 7 or mode == 11 or mode == 13 or mode == 14 then
 	return true
