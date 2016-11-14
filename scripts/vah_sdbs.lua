@@ -8,9 +8,11 @@ __sdbs = {
         base = "./",
         lua = "./lua/",
         extra = "./lua/extra/",
+        config = "./lua/config/",
         sdbs = "./lua/scripts/vah_sdbs/"
     },
     config = {
+        resetflag = true,
         gema_mode_autodetecting = true,
         gema_mode_is_turned_on = tru,
         configrandommaprot = false --I like randomness
@@ -34,20 +36,31 @@ require("webnet")
 __sdbs.player = {
     flag = {
         time = 5,
-        reset = function(self,cn, action, flag)
-            if action == FA_DROP or action == FA_LOST then
-                flagaction(cn, FA_RESET, flag)
-            end
-        end
+        action = {
+            --[[
+            [FA_PICKUP] = function (cn,flag) end,
+            [FA_STEAL] = function (cn, flag) flagaction(cn, FA_RESET, flag) end,
+            [FA_RETURN] = function (cn,flag) end,
+            [FA_SCORE] = function (cn, flag) end,
+            [FA_RESET] = function (cn, flag) end
+            ]]
+            [FA_DROP] = function (cn, flag) flagaction(cn, FA_RESET, flag) end,
+            [FA_LOST] = function (cn, flag) flagaction(cn, FA_RESET, flag) end
+        }
     },
     info = {
         data = {},
         config = {
         },
+        gametime = function (self,cn)
+            if self.data[cn] ~= null then
+                return getsvtick() - self.data[cn].starttime
+            end
+            return 0
+        end,
         inituser = function (self, cn, enet )
             if enet ~= nil and cn >= 0 and cn < maxclient() then
                 local data = enet.geo(enet,cn)
-                print (data.iso)
                 if self.data[cn] == nil then
                     self.data[cn] = {
                         name = getname(cn),
@@ -55,12 +68,20 @@ __sdbs.player = {
                         country = data.country,
                         ip = data.ip,
                         role = isadmin(cn),
-                        time = {
-                            start = getsvtick(),
-                            gametime = function ()
-                                return getsvtick() - self.start
-                            end
-                        }
+                        frags = nil,
+                        flagscore = nil,
+                        deaths = nil,
+                        teamkills = nil,
+                        shotdamage = nil,
+                        damage = nil,
+                        points = nil,
+                        forced = nil,
+                        events = nil,
+                        lastdisc = nil,
+                        reconnections = nil,
+                        team = nil,
+                        starttime = getsvtick(),
+                        endtime = self:gametime(cn)
                     }
                     return self.data[cn]
                 end
@@ -99,8 +120,7 @@ __sdbs.player = {
 }
 
 __sdbs.new = function ()
-    local self = setmetatable({},{__index=__sdbs})
-    --local self = setmetatable({},{__index=_M})   
+    local self = setmetatable({},{__index=__sdbs}) 
     return self
 end
 
@@ -110,9 +130,6 @@ sdbs = __sdbs.new();
 
 function onInit()
     sdbs.webnet = webnet:new(sdbs.path.sdbs.."IpToCountry.csv")
-    --sdbs.webnet = webnet:new()
-    --sdbs.webnet:load(sdbs.path.sdbs .. "IpToCountry.csv")
-    --if sdbs.webnet ~= nil then print ("Init webnet") else print ("Not init webnet") end
 end
 
 function onDestroy()
@@ -122,13 +139,28 @@ function onMapStart()
 end
 
 function onMapEnd()
+    say("\f0 hg!  \fEThanks all!")
 end
 
-function onPlayerConnect(cn, reason)
+--(string map_name, int game_mode)
+function onMapChange(name, mode)
+end
+
+--(int actor_cn)
+function onPlayerPreconnect(cn)
+    setname(cn,"spirit-{ " ..(getname(cn)).. " }->")
+end
+
+--(int actor_cn)
+function onPlayerConnect(cn)
     local info = sdbs.player.info:inituser(cn,sdbs.webnet)
-    --local info = sdbs.player.info:get(cn)
     if info ~= nil then
-        -- local config = sdbs.player.info.config
+        if isadmin(i) then 
+            sayex(string.format("\f1Player \f2%s (\f1%s\f2) \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",info.name,cn,info.country, info.iso ,info.ip),cn)
+        else
+            sayex(string.format("\f1Player \f2%s (\f1%s\f2) \f1came from \f5%s\f1, \f2%s",info.name,cn,info.country, info.iso),cn)
+        end
+--[[
         for i = 0, maxclient() - 1 do
             --if isconnected(i) then
             if isconnected(i) and i ~= cn then
@@ -139,18 +171,37 @@ function onPlayerConnect(cn, reason)
                 end
             end
         end
+]]
         say("\f3Hello \f2 " ..info.name.. " (\f1" ..cn.. "\f2) \f3:D ",cn) 
     end
 end
 
+--(int actor_cn, int reason)
+function onPlayerDisconnectAfter(cn,reason)
+end
+
+--(int actor_cn, int reason)
 function onPlayerDisconnect(cn, reason)
     sdbs.player.info:unsetuser(cn)
     say("\f3:( Goodbye my baby \f2 " ..getname(cn).. " \f3:(") 
 end
 
+--(int sender_cn, string message, bool team, bool me)
+function onPlayerSayText(cn, message,team,me)
+end
+
+-- (int actor_cn, int target_cn, int damage, int actor_gun, bool gib)
+function onPlayerDamage(cn, tcn, damage, gun, gib)
+end
+
+--(int target_cn, int actor_cn, bool gib, int gun)
+function onPlayerDeath(tcn, cn,gib,gun)
+end
+
+--(int actor_cn)
 function onPlayerSpawn(cn)
 end
 
 function onFlagAction(cn, action, flag)
-    sdbs.player.flag.reset(cn, action, flag)
+    sdbs.player.flag.action[action](cn, flag)
 end

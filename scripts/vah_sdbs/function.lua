@@ -69,10 +69,18 @@ function say(text, cn)
     clientprint(cn, text)
 end
 
-function printfile(path)
-    -- local file = assert(io.open(path, "r"), "File " .. path .. " not found"))
+function sayall(text)
+    clientprint(-1, text)
+end
+
+function sayex(text, tcn )
+    if tcn == nil then tcn = -1 end
+    clientprint(-1, text,tcn)
+end
+
+function sayfile(path)
     for line in io.lines(path) do
-        say(line)
+        sayall(line)
     end
 end
 
