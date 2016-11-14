@@ -78,10 +78,12 @@ __sdbs.player = {
                         cn = cn,
                         name = data.name,
                         oldname = data.name,
+                        numberListOldname = 0,
+                        listOldName = {},
                         iso = data.iso,
                         country = data.country,
                         ip = data.ip,
-                        role = isadmin(cn),
+                        role = isadmin(cn), 
                         frags = SDBS_NAN,
                         flagscore = SDBS_NAN,
                         deaths = SDBS_NAN,
@@ -112,28 +114,30 @@ __sdbs.player = {
                 end
             end
             return {
-                    cn = SDBS_NAN,
-                    name = SDBS_NAN,
-                    oldname = SDBS_NAN,
-                    iso = SDBS_NAN,
-                    country = SDBS_NAN,
-                    ip = SDBS_NAN,
-                    role = SDBS_NAN,
-                    frags = SDBS_NAN,
-                    flagscore = SDBS_NAN,
-                    deaths = SDBS_NAN,
-                    teamkills = SDBS_NAN,
-                    shotdamage = SDBS_NAN,
-                    damage = SDBS_NAN,
-                    points = SDBS_NAN,
-                    forced = SDBS_NAN,
-                    events = SDBS_NAN,
-                    lastdisc = SDBS_NAN,
-                    reconnections = SDBS_NAN,
-                    team = SDBS_NAN,
-                    starttime = SDBS_NAN,
-                    endtime = SDBS_NAN
-            }
+                        cn = SDBS_NAN,
+                        name = SDBS_NAN,
+                        oldname = SDBS_NAN,
+                        numberListOldname = SDBS_NAN,
+                        listOldName = SDBS_NAN,
+                        iso = SDBS_NAN,
+                        country = SDBS_NAN,
+                        ip = SDBS_NAN,
+                        role = SDBS_NAN, 
+                        frags = SDBS_NAN,
+                        flagscore = SDBS_NAN,
+                        deaths = SDBS_NAN,
+                        teamkills = SDBS_NAN,
+                        shotdamage = SDBS_NAN,
+                        damage = SDBS_NAN,
+                        points = SDBS_NAN,
+                        forced = SDBS_NAN,
+                        events = SDBS_NAN,
+                        lastdisc = SDBS_NAN,
+                        reconnections = SDBS_NAN,
+                        team = SDBS_NAN,
+                        starttime = SDBS_NAN,
+                        endtime = SDBS_NAN
+                    }
         end,
         getname = function(self, cn)
             local data = self:get(cn)
@@ -242,12 +246,13 @@ end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnectAfter(cn,reason)
-    sdbs.player.info:unsetuser(cn)
+
 end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnect(cn, reason)
-    say(string.format("\f3:( Goodbye my baby \f2s% \f3:("),sdbs.player.info:getname(cn)) 
+    sayex(string.format("\f3:( Goodbye my baby \f2%s \f3:(",sdbs.player.info:getname(cn)),cn)
+    sdbs.player.info:unsetuser(cn)
 end
 
 --(int actor_cn, int new_role, string hash, int adminpwd_line, bool player_is_connecting)
@@ -266,7 +271,13 @@ function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
         end
     else
         print("not compare")
-        if sdbs.config.disconnectLoLadmin then disconnect(cn, 1) else setrole(cn, CR_DEFAULT) end
+        if sdbs.config.disconnectLoLadmin then 
+            sayex(string.format("\f3Goodbye my LoL troll NICK - \f2%s",sdbs.player.info:getname(cn)),cn)
+            sdbs.player.info:unsetuser(cn)
+            disconnect(cn, DISC_BADNICK)
+        else
+            setrole(cn, CR_DEFAULT)
+        end
     end
 end
 
@@ -275,7 +286,7 @@ function onPlayerSayText(cn, message,team,me)
 end
 
 -- (int actor_cn, int target_cn, int damage, int actor_gun, bool gib)
-function onPlayerDamage(cn, tcn, damage, gun, gib)
+function onPlayerDamage(cn, tcn, damage, gun, gib)  
 end
 
 --(int target_cn, int actor_cn, bool gib, int gun)
