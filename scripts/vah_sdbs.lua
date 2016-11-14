@@ -2,6 +2,8 @@ PLUGIN_NAME = "vah_sdbs open source version"
 PLUGIN_AUTHOR = "SDBS" -- sensor-dream
 PLUGIN_VERSION = "1.0.4" -- black lua mod
 
+SDBS_NAN = "NaN"
+
 __sdbs = {
     name = "vah_sdbs",
     path = {
@@ -12,9 +14,12 @@ __sdbs = {
         sdbs = "./lua/scripts/vah_sdbs/"
     },
     config = {
+        -- Обворачивает имя игрока в spirit-{ <NAME> }->
+        isspirrit = true,
+        -- Авто ресет флаг при потере сбросе флаг или гибели игрока
         resetflag = true,
-        gema_mode_autodetecting = true,
-        gema_mode_is_turned_on = tru,
+        -- автоопределение режима игры или карты gema
+        autodetectingmode = true,
         configrandommaprot = false --I like randomness
     },
     webnet = nil,
@@ -59,8 +64,11 @@ __sdbs.player = {
             return 0
         end,
         inituser = function (self, cn, enet )
-            if enet ~= nil and cn >= 0 and cn < maxclient() then
-                local data = enet.geo(enet,cn)
+            if isconnected(cn) and cn >= 0 and cn < maxclient() then
+                local data = { iso = SDBS_NAN, country = SDBS_NAN, ip = SDBS_NAN }
+                if enet ~= nil then 
+                    data = enet.geo(enet,cn)
+                end    
                 if self.data[cn] == nil then
                     self.data[cn] = {
                         name = getname(cn),
@@ -68,18 +76,18 @@ __sdbs.player = {
                         country = data.country,
                         ip = data.ip,
                         role = isadmin(cn),
-                        frags = nil,
-                        flagscore = nil,
-                        deaths = nil,
-                        teamkills = nil,
-                        shotdamage = nil,
-                        damage = nil,
-                        points = nil,
-                        forced = nil,
-                        events = nil,
-                        lastdisc = nil,
-                        reconnections = nil,
-                        team = nil,
+                        frags = SDBS_NAN,
+                        flagscore = SDBS_NAN,
+                        deaths = SDBS_NAN,
+                        teamkills = SDBS_NAN,
+                        shotdamage = SDBS_NAN,
+                        damage = SDBS_NAN,
+                        points = SDBS_NAN,
+                        forced = SDBS_NAN,
+                        events = SDBS_NAN,
+                        lastdisc = SDBS_NAN,
+                        reconnections = SDBS_NAN,
+                        team = SDBS_NAN,
                         starttime = getsvtick(),
                         endtime = self:gametime(cn)
                     }
@@ -97,7 +105,27 @@ __sdbs.player = {
                     return self.data[cn]
                 end
             end
-            return nil
+            return {
+                    name = SDBS_NAN,
+                    iso = SDBS_NAN,
+                    country = SDBS_NAN,
+                    ip = SDBS_NAN,
+                    role = SDBS_NAN,
+                    frags = SDBS_NAN,
+                    flagscore = SDBS_NAN,
+                    deaths = SDBS_NAN,
+                    teamkills = SDBS_NAN,
+                    shotdamage = SDBS_NAN,
+                    damage = SDBS_NAN,
+                    points = SDBS_NAN,
+                    forced = SDBS_NAN,
+                    events = SDBS_NAN,
+                    lastdisc = SDBS_NAN,
+                    reconnections = SDBS_NAN,
+                    team = SDBS_NAN,
+                    starttime = SDBS_NAN,
+                    endtime = SDBS_NAN
+            }
         end,
         isspect = function (team)
             return team > 1 and team <= 4
@@ -148,7 +176,7 @@ end
 
 --(int actor_cn)
 function onPlayerPreconnect(cn)
-    setname(cn,"spirit-{ " ..(getname(cn)).. " }->")
+    if sdbs.config.isspirrit then setname(cn,"spirit-{ " ..(getname(cn)).. " }->") end
 end
 
 --(int actor_cn)
@@ -182,8 +210,17 @@ end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnect(cn, reason)
+    say(string.format("\f3:( Goodbye my baby \f2s% \f3:("),(sdbs.player.info:get(cn)).name) 
     sdbs.player.info:unsetuser(cn)
-    say("\f3:( Goodbye my baby \f2 " ..getname(cn).. " \f3:(") 
+end
+
+--(int actor_cn, int new_role, string hash, int adminpwd_line, bool player_is_connecting)
+function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
+    if new_role == CR_ADMIN then
+        (sdbs.player.info.get(cn)).role = CR_ADMIN
+    else
+        (sdbs.player.info.get(cn)).role = CR_DEFAULT
+    end
 end
 
 --(int sender_cn, string message, bool team, bool me)
@@ -203,5 +240,5 @@ function onPlayerSpawn(cn)
 end
 
 function onFlagAction(cn, action, flag)
-    sdbs.player.flag.action[action](cn, flag)
+     if sdbs.config.resetflag then sdbs.player.flag.action[action](cn, flag) end
 end
