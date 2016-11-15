@@ -2,7 +2,8 @@ PLUGIN_NAME = "vah_sdbs open source version"
 PLUGIN_AUTHOR = "SDBS" -- sensor-dream
 PLUGIN_VERSION = "1.0.4" -- black lua mod
 
-SDBS_NAN = "NaN"
+
+-- Для работы со строками
 
 __sdbs = {
     name = "vah_sdbs",
@@ -14,16 +15,33 @@ __sdbs = {
         sdbs = "./lua/scripts/vah_sdbs/"
     },
     config = {
-        -- Обворачивает имя игрока в spirit-{ <NAME> }->
-        isspirrit = false,
-        -- Авто ресет флаг при потере сбросе флаг или гибели игрока
+        -- Авто ресет флаг при потере сбросе флага или гибели игрока
         resetflag = true,
-        -- Если игрок сменил имя на другое и хочет стать админом или наоборот -> то выкинуть с сервера
-        disconnectLoLadmin = true,
+        -- Разрешить одинаковые имена
+        allowSameName = false,
+        -- Обворачивает имя игрока в >>>-{ NAME }->
+        wrapperName = true,
+        -- Если игрок сменил имя на другое и хочет стать админом или наоборот админ меняет свое имя, то выкинуть с сервера
+        disconnectLoLadmin = false,
         -- автоопределение режима игры или карты gema
         autodetectingmode = true,
+        --Выключить мод если не gema
+        tyrnOfModIsNotGema = false,
         configrandommaprot = false --I like randomness
     },
+    wrappers = {
+        [0] = ">>>-(",
+        [1] = ")-{",
+        [2] = "}->"
+    },
+    wrapper = function(self,str,cn)
+        if self.config.wrapperName then
+            if cn == nil then cn = "NaN" end
+            return string.format("%s%s%s%s%s",self.wrappers[0],cn,self.wrappers[1],str,self.wrappers[2])
+            --setname(cn,name)                        
+        end
+        return str
+    end,
     webnet = nil,
     player = nil
 }
@@ -43,17 +61,9 @@ require("webnet")
 __sdbs.player = {
     flag = {
         time = 5,
-        action = {
-            --[[
-            [FA_PICKUP] = function (cn,flag) end,
-            [FA_STEAL] = function (cn, flag) flagaction(cn, FA_RESET, flag) end,
-            [FA_RETURN] = function (cn,flag) end,
-            [FA_SCORE] = function (cn, flag) end,
-            [FA_RESET] = function (cn, flag) end
-            ]]
-            [FA_DROP] = function (cn, flag) flagaction(cn, FA_RESET, flag) end,
-            [FA_LOST] = function (cn, flag) flagaction(cn, FA_RESET, flag) end
-        }
+        reset = function (self, cn,flag)
+            if self.root.config.resetflag then flagaction(cn, FA_RESET, flag) end
+        end
     },
     info = {
         data = {},
@@ -66,36 +76,67 @@ __sdbs.player = {
             end
             return 0
         end,
-        inituser = function (self, cn, enet )
-            if isconnected(cn) and cn >= 0 and cn < maxclient() then
-                if self.data[cn] == nil then
-                    local data = { iso = SDBS_NAN, country = SDBS_NAN, ip = SDBS_NAN }
-                    if enet ~= nil then 
-                        data = enet.geo(enet,cn)
+        is = function (self, cn)
+            if self.data[cn] ~=nil then return true else return false end
+        end,
+        unsetuser = function (self,cn)
+            if self:is(cn) then self.data[cn] = nil end
+        end,
+        setuser = function (self, cn, enet )
+            if isconnected(cn) and cn >= 0 and cn < maxclient() then                
+                if not self:is(cn) then
+                    local name = getname(cn)
+                    if not self.root.config.allowSameName  then
+                        -- Работает в 2 раза быстрее 
+                        for i = 0, #self.data do
+                            if self:is(i) and ( self.data[i].name == name or self.data[i].oldname == name ) then
+                                sayall(string.format("\n\f3>>>>        \f0There was an attempt entrance player with the same name \f2%s",self.root:wrapper(name,cn)))
+                                sayall("\f3>>>>        \f0Which is prohibited by the rules.")
+                                self:unsetuser(cn)
+                                disconnect(cn, DISC_BADNICK)
+                                return nil
+                            end
+                        end
+                        -- Работает в 2 раза медленнее
+--[[
+                        for i, val in ipairs(self.data) do
+                            if self:is(i) and val == name then
+                                sayall(string.format("\f2There was an attempt entrance player with the same name \f3%s. \f0Which is prohibited by the rules",name))
+                                self:unsetuser(cn)
+                                disconnect(cn, DISC_BADNICK)
+                                return nil
+                            end
+                        end
+]]
                     end
-                    data.name = getname(cn)
+                    
+
+                    local data = { iso = nil, country = nil, ip = nil }
+
+                    if self.root.webnet ~= nil then 
+                        data = self.root.webnet:geo(cn)
+                    end
+
                     self.data[cn] = {
                         cn = cn,
-                        name = data.name,
-                        oldname = data.name,
-                        numberListOldname = 0,
-                        listOldName = {},
+                        name = name,
+                        oldname = name,
                         iso = data.iso,
                         country = data.country,
                         ip = data.ip,
                         role = isadmin(cn), 
-                        frags = SDBS_NAN,
-                        flagscore = SDBS_NAN,
-                        deaths = SDBS_NAN,
-                        teamkills = SDBS_NAN,
-                        shotdamage = SDBS_NAN,
-                        damage = SDBS_NAN,
-                        points = SDBS_NAN,
-                        forced = SDBS_NAN,
-                        events = SDBS_NAN,
-                        lastdisc = SDBS_NAN,
-                        reconnections = SDBS_NAN,
-                        team = SDBS_NAN,
+                        frags = nil,
+                        flagscore = nil,
+                        deaths = nil,
+                        teamkills = nil,
+                        shotdamage = nil,
+                        damage = nil,
+                        points = nil,
+                        forced = nil,
+                        events = nil,
+                        lastdisc = nil,
+                        reconnections = nil,
+                        team = nil,
                         starttime = getsvtick(),
                         endtime = self:gametime(cn)
                     }
@@ -104,50 +145,45 @@ __sdbs.player = {
             end
             return nil;
         end,
-        unsetuser = function (self,cn)
-           if self.data[cn] ~=nil then self.data[cn] = nil end
-        end,
         get = function (self, cn) 
             if isconnected(cn) and cn >= 0 and cn < maxclient() then
-                if self.data[cn] ~=nil then
+                if self:is(cn) then
                     return self.data[cn]
                 end
             end
             return {
-                        cn = SDBS_NAN,
-                        name = SDBS_NAN,
-                        oldname = SDBS_NAN,
-                        numberListOldname = SDBS_NAN,
-                        listOldName = SDBS_NAN,
-                        iso = SDBS_NAN,
-                        country = SDBS_NAN,
-                        ip = SDBS_NAN,
-                        role = SDBS_NAN, 
-                        frags = SDBS_NAN,
-                        flagscore = SDBS_NAN,
-                        deaths = SDBS_NAN,
-                        teamkills = SDBS_NAN,
-                        shotdamage = SDBS_NAN,
-                        damage = SDBS_NAN,
-                        points = SDBS_NAN,
-                        forced = SDBS_NAN,
-                        events = SDBS_NAN,
-                        lastdisc = SDBS_NAN,
-                        reconnections = SDBS_NAN,
-                        team = SDBS_NAN,
-                        starttime = SDBS_NAN,
-                        endtime = SDBS_NAN
+                        cn = nil,
+                        name = nil,
+                        oldname = nil,
+                        iso = nil,
+                        country = nil,
+                        ip = nil,
+                        role = nil, 
+                        frags = nil,
+                        flagscore = nil,
+                        deaths = nil,
+                        teamkills = nil,
+                        shotdamage = nil,
+                        damage = nil,
+                        points = nil,
+                        forced = nil,
+                        events = nil,
+                        lastdisc = nil,
+                        reconnections = nil,
+                        team = nil,
+                        starttime = nil,
+                        endtime = nil
                     }
+        end,
+        getcn = function (self, name)
+            for i = 0, maxclient() - 1 do
+                if self:is(i) and self.data[i].name == name then return self.data[i].cn end
+            end
+            return nil
         end,
         getname = function(self, cn)
             local data = self:get(cn)
             return data.name
-        end,
-        getcn = function (self, name)
-            for i = 0, maxclient() - 1 do
-                if self.data[i] ~= nil and self.data[i].name == name then return self.data[i].cn end
-            end
-            return nil
         end,
         getoldname = function(self, cn)
             local data = self:get(cn)
@@ -165,15 +201,20 @@ __sdbs.player = {
             local data = self:get(cn)
             return data.ip
         end,
-        isspect = function (self, team)
-            return team > 1 and team <= 4
-        end,
-        isactive = function (self, team)
-            return team == 0 or team == 1
+        whocn = function (self,cn)
+            if self:is(cn) then 
+                return {
+                    name = self.data[cn].name,
+                    iso = self.data[cn].iso,
+                    country = self.data[cn].country,
+                    cn = self.data[cn].cn
+                }
+            end
+            return nil
         end,
         whoadmin = function ()
             for i = 0, maxclient() - 1 do
-                if self.data[i] ~= nil and self.data[i].role == CR_ADMIN then
+                if self:is(cn) and self.data[i].role == CR_ADMIN then
                     return {
                         name = self.data[i].name,
                         iso = self.data[i].iso,
@@ -188,7 +229,7 @@ __sdbs.player = {
 }
 
 __sdbs.new = function ()
-    local self = setmetatable({},{__index=__sdbs}) 
+    local self = setmetatable({},{__index=__sdbs})
     return self
 end
 
@@ -197,82 +238,56 @@ sdbs = __sdbs.new();
 -- lookup global function
 
 function onInit()
+    sdbs.player.root = setmetatable({},{__index = sdbs})
+    sdbs.player.flag.root = setmetatable({},{__index = sdbs})
+    sdbs.player.info.root = setmetatable({},{__index = sdbs})
     sdbs.webnet = webnet:new(sdbs.path.sdbs.."IpToCountry.csv")
 end
 
 function onDestroy()
 end
 
-function onMapStart()
-end
-
-function onMapEnd()
-    say("\f0HG!  \fEThanks all!")
-end
-
---(string map_name, int game_mode)
-function onMapChange(name, mode)
-end
-
---(int actor_cn)
-function onPlayerPreconnect(cn)
-    if sdbs.config.isspirrit then setname(cn,"spirit-{ " ..(getname(cn)).. " }->") end
-end
-
 --(int actor_cn)
 function onPlayerConnect(cn)
-    local info = sdbs.player.info:inituser(cn,sdbs.webnet)
+    local info = sdbs.player.info:setuser(cn)
     if info ~= nil then
-        if isadmin(i) then 
-            sayex(string.format("\f1Player \f2%s (\f1%s\f2) \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",info.name,cn,info.country, info.iso ,info.ip),cn)
+        if isadmin(cn) then 
+            sayex(string.format("\n\f3>>>>        \f1Player \f2%s \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",sdbs:wrapper(info.name,cn),info.country, info.iso ,info.ip),cn)
         else
-            sayex(string.format("\f1Player \f2%s (\f1%s\f2) \f1came from \f5%s\f1, \f2%s",info.name,cn,info.country, info.iso),cn)
+            sayex(string.format("\n\f3>>>>        \f1Player \f2%s \f1came from \f5%s\f1, \f2%s",sdbs:wrapper(info.name,cn),info.country, info.iso),cn)
         end
---[[
-        for i = 0, maxclient() - 1 do
-            --if isconnected(i) then
-            if isconnected(i) and i ~= cn then
-                if isadmin(i) then
-                    say(string.format("\f1Player \f2%s (\f1%s\f2) \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",info.name,cn,info.country, info.iso ,info.ip),i)
-                else
-                    say(string.format("\f1Player \f2%s (\f1%s\f2) \f1came from \f5%s\f1, \f2%s",info.name,cn,info.country, info.iso),i)
-                end
-            end
-        end
-]]
-        say("\f3Hello \f2 " ..info.name.. " (\f1" ..cn.. "\f2) \f3:D ",cn) 
+        say("\n\f3>>>>        \f1Hello \f2 " ..(sdbs:wrapper(info.name,cn)).. " \f3:D ",cn) 
     end
 end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnectAfter(cn,reason)
-
 end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnect(cn, reason)
-    sayex(string.format("\f3:( Goodbye my baby \f2%s \f3:(",sdbs.player.info:getname(cn)),cn)
+    sayall(string.format("\n\f3>>>>        \f0Player \f2%s \f3 leaving us, went to see \f1https://vah-clan.ga \f0:D",sdbs:wrapper(getname(cn),cn)))
     sdbs.player.info:unsetuser(cn)
+end
+
+--(int actor_cn, int old_role, string hash, int adminpwd_line, bool player_is_connecting)
+function onPlayerRoleChangeAfter(cn, old_role, hash, admpwd, isconnecting)
 end
 
 --(int actor_cn, int new_role, string hash, int adminpwd_line, bool player_is_connecting)
 function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
-    print (sdbs.player.info:getname(cn))
-    print (sdbs.player.info:getoldname(cn))
-    print(getname(cn))
-    if (sdbs.player.info:getoldname(cn)) == (getname(cn)) then
-        print("compare")
+    local name = getname(cn)
+    if (sdbs.player.info:getoldname(cn)) == name then
         if new_role == CR_ADMIN then
             sdbs.player.info.data[cn].role = CR_ADMIN
-            print("role ADMIN")
         else
             sdbs.player.info.data[cn].role = CR_DEFAULT
-            print("role DEFAULT")
         end
     else
-        print("not compare")
         if sdbs.config.disconnectLoLadmin then 
-            sayex(string.format("\f3Goodbye my LoL troll NICK - \f2%s",sdbs.player.info:getname(cn)),cn)
+            sayall("\n\f3>>>>        \f2An attempt was made to change the name to become a manager, probably in order to troll. Last change")
+            sayall(string.format("\f3>>>>        %s -> %s",sdbs:wrapper(sdbs.player.info:getoldname(cn),cn),sdbs:wrapper(name,cn)))
+            sayall("\f3>>>>        \f2This is prohibited by the regulations in force.")
             sdbs.player.info:unsetuser(cn)
             disconnect(cn, DISC_BADNICK)
         else
@@ -281,22 +296,27 @@ function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
     end
 end
 
---(int sender_cn, string message, bool team, bool me)
-function onPlayerSayText(cn, message,team,me)
-end
-
--- (int actor_cn, int target_cn, int damage, int actor_gun, bool gib)
-function onPlayerDamage(cn, tcn, damage, gun, gib)  
-end
-
---(int target_cn, int actor_cn, bool gib, int gun)
-function onPlayerDeath(tcn, cn,gib,gun)
-end
-
---(int actor_cn)
-function onPlayerSpawn(cn)
+--(int actor_cn, string new_name)
+function onPlayerNameChange(cn, newname)
+    if sdbs.player.info:is(cn) then 
+        if  not sdbs.config.allowSameName then
+            for i = 0, #sdbs.player.info.data do
+                if sdbs.player.info:is(i) and ( sdbs.player.info.data[i].name == newname or sdbs.player.info.data[i].oldname == newname )  then
+                    sayall("\f3>>>>        \f2There was an attempt entrance player with the same name")
+                    sayall(string.format("\f3>>>>        %s -> %s",sdbs:wrapper(sdbs.player.info:getname(cn),cn),sdbs:wrapper(newname,cn)))
+                    sayall("\f3>>>>        \f2Which is prohibited by the rules.")
+                    sdbs.player.info:unsetuser(cn)
+                    disconnect(cn, DISC_BADNICK)
+                    return nil
+                end
+            end
+        end
+        sayex(string.format("\f3>>>>        \f2Player name changes \f0%s \f2-> \f1%s",sdbs:wrapper(sdbs.player.info:getname(cn),cn),sdbs:wrapper(newname,cn)),cn)
+        sdbs.player.info.data[cn].oldname = sdbs.player.info.data[cn].name
+        sdbs.player.info.data[cn].name = newname
+    end
 end
 
 function onFlagAction(cn, action, flag)
-     if sdbs.config.resetflag then sdbs.player.flag.action[action](cn, flag) end
+    if action == FA_DROP or action == FA_LOST then sdbs.player.flag:reset(cn,flag) end
 end
