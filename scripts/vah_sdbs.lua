@@ -1,7 +1,8 @@
 PLUGIN_NAME = "vah_sdbs open source version"
 PLUGIN_AUTHOR = "SDBS" -- sensor-dream
-PLUGIN_VERSION = "1.0.4" -- black lua mod
+PLUGIN_VERSION = "1.0.5" -- black lua mod
 
+--module("SDBS", package.seeall)
 
 -- Для работы со строками
 
@@ -15,34 +16,28 @@ __sdbs = {
         sdbs = "./lua/scripts/vah_sdbs/"
     },
     config = {
+        defaultDomain = "vah-clan.ga",
+        defaultUser = "root",
+        defaultServer = "frends",
         -- Авто ресет флаг при потере сбросе флага или гибели игрока
         resetflag = true,
         -- Разрешить одинаковые имена
         allowSameName = false,
-        -- Обворачивает имя игрока в >>>-{ NAME }->
+        -- Обворачивает имя игрока в >>>-{ NAME }-> можно изменить
         wrapperName = true,
         -- Если игрок сменил имя на другое и хочет стать админом или наоборот админ меняет свое имя, то выкинуть с сервера
-        disconnectLoLadmin = false,
+        disconnectLoLadmin = true,
+        -- Говорить всем кто стал админом :D
+        onSayAdminRoleChanged = true,
         -- автоопределение режима игры или карты gema
         autodetectingmode = true,
         --Выключить мод если не gema
         tyrnOfModIsNotGema = false,
         configrandommaprot = false --I like randomness
-    },
-    wrappers = {
-        [0] = ">>>-(",
-        [1] = ")-{",
-        [2] = "}->"
-    },
-    wrapper = function(self,str,cn)
-        if self.config.wrapperName then
-            if cn == nil then cn = "NaN" end
-            return string.format("%s%s%s%s%s",self.wrappers[0],cn,self.wrappers[1],str,self.wrappers[2])
-            --setname(cn,name)                        
-        end
-        return str
-    end,
+    },  
     webnet = nil,
+    say = nil,
+    game = nil,
     player = nil
 }
 
@@ -58,6 +53,72 @@ require("fs")
 require("server")
 require("webnet")
 
+__sdbs.say = {
+    setCursorInfoState = function (self,user,server)
+        self.wrappers[0] = "["..(user or self.root.config.defaultUser).."@"..(server or self.root.config.defaultServer).."."..self.root.config.defaultDomain.."]$       "
+        return self.wrappers[0]
+    end,
+    wrappers = {
+        [0] = nil,
+        [1] = ">>>-(",
+        [2] = ")-{",
+        [3] = "}->"
+    },
+    wrapper = function(self,str,cn)
+        if self.root.config.wrapperName then
+            if cn == nil then cn = "NaN" end
+            return string.format("%s%s%s%s%s",self.wrappers[1],cn,self.wrappers[2],str,self.wrappers[3])
+            --setname(cn,name)                        
+        end
+        return str
+    end,
+    onErrorSetUser = function (self, cn, name)
+        say(string.format("\f3%s\f0There was an attempt entrance player with the same name \f2%s",self.wrappers[0],self:wrapper(name,cn)))
+        say("\f0Which is prohibited by the rules.")
+    end,
+    onMapChange = function(self,mapname,mapmode)
+        sayall(string.format("\f0%s\f1Selected playground %s for \f2 %s \f3 mode :D ",self.wrappers[0],mapname,mapmode))
+    end,
+    onPlayerConnect = function(self,flag,info)
+        if flag == 0  then sayex(string.format("\f0%s\f1Player \f2%s \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",self.wrappers[0],self:wrapper(info.name,info.cn),info.country, info.iso ,info.ip),info.cn) end
+        if flag == 1  then  sayex(string.format("\f0%s\f1Player \f2%s \f1came from \f5%s\f1, \f2%s",self.wrappers[0],self:wrapper(info.name,info.cn),info.country, info.iso),info.cn) end
+        if flag == 2  then say(string.format("\f0%s\f3Hello \f2 %s \f3:D ",self.wrappers[0],self:wrapper(info.name,info.cn)),info.cn) end
+    end,
+    onPlayerDisconnect = function(self,cn,reason)
+        sayex(string.format("\f0%s\f0Player \f2%s \f3 leaving us, went to see \f1https://vah-clan.ga \f0:D",self.wrappers[0],self:wrapper(getname(cn),cn)))
+    end,
+    onPlayerRoleChange = function(self,flag,cn,name)
+        if flag == 0 then sayall(string.format("\f0%s\f2is Administrator",self.wrappers[0],self:wrapper(name,cn))) end
+    end
+}
+
+__sdbs.game = {
+    listmode = {
+        [GM_DEMO] = "DEMO",
+        [GM_TDM] = "TDM",
+        [GM_COOP] = "COOP",
+        [GM_DM] = "DM",
+        [GM_SURV] = "SURV",
+        [GM_TSURV] = "TSURV",
+        [GM_CTF] = "CTF",
+        [GM_PF] = "PF",
+        [GM_LSS] = "LSS",
+        [GM_OSOK] = "OSOK",
+        [GM_TOSOK] = "TOSOK",
+        [GM_HTF] = "HTF",
+        [GM_TKTF] = "TKTF",
+        [GM_KTF] = "KTF",
+        [GM_NUM] = "NUM"
+    },
+    getmode = function(self,mode)
+        local m = mode or getgamemode()
+        if self.listmode[m] ~= nil then self.mode = self.listmode[m] else self.mode = "|VAH|" end
+        return self.mode
+    end,
+    mode = nil,
+    mapname = nil,
+}
+
 __sdbs.player = {
     flag = {
         time = 5,
@@ -68,8 +129,6 @@ __sdbs.player = {
     info = {
         data = {},
         backdata = {},
-        config = {
-        },
         gametime = function (self,cn)
             if self.data[cn] ~= null then
                 return getsvtick() - self.data[cn].starttime
@@ -90,8 +149,7 @@ __sdbs.player = {
                         -- Работает в 2 раза быстрее 
                         for i = 0, #self.data do
                             if self:is(i) and ( self.data[i].name == name or self.data[i].oldname == name ) then
-                                sayall(string.format("\n\f3>>>>        \f0There was an attempt entrance player with the same name \f2%s",self.root:wrapper(name,cn)))
-                                sayall("\f3>>>>        \f0Which is prohibited by the rules.")
+                                self.root.say:onErrorSetUser(cn,name)
                                 self:unsetuser(cn)
                                 disconnect(cn, DISC_BADNICK)
                                 return nil
@@ -238,25 +296,40 @@ sdbs = __sdbs.new();
 -- lookup global function
 
 function onInit()
+    --sdbs.cursor = getservername()
+    sdbs.say.root = setmetatable({},{__index = sdbs})
+    sdbs.game.root = setmetatable({},{__index = sdbs})
     sdbs.player.root = setmetatable({},{__index = sdbs})
     sdbs.player.flag.root = setmetatable({},{__index = sdbs})
     sdbs.player.info.root = setmetatable({},{__index = sdbs})
+    
+    sdbs.say:setCursorInfoState()
+
     sdbs.webnet = webnet:new(sdbs.path.sdbs.."IpToCountry.csv")
 end
 
 function onDestroy()
 end
 
+--(string map_name, int game_mode)
+function onMapChange(name,mode)
+    sdbs.game:getmode(mode,name)
+    sdbs.game.mapname = name
+    sdbs.say:setCursorInfoState(sdbs.game.mode)
+    sdbs.say:onMapChange(name,sdbs.game.mode)
+end
+
+
 --(int actor_cn)
 function onPlayerConnect(cn)
     local info = sdbs.player.info:setuser(cn)
     if info ~= nil then
         if isadmin(cn) then 
-            sayex(string.format("\n\f3>>>>        \f1Player \f2%s \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",sdbs:wrapper(info.name,cn),info.country, info.iso ,info.ip),cn)
+            sdbs.say:onPlayerConnect(0,info)
         else
-            sayex(string.format("\n\f3>>>>        \f1Player \f2%s \f1came from \f5%s\f1, \f2%s",sdbs:wrapper(info.name,cn),info.country, info.iso),cn)
+            sdbs.say:onPlayerConnect(1,info)
         end
-        say("\n\f3>>>>        \f1Hello \f2 " ..(sdbs:wrapper(info.name,cn)).. " \f3:D ",cn) 
+        sdbs.say:onPlayerConnect(2,info)
     end
 end
 
@@ -266,7 +339,7 @@ end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnect(cn, reason)
-    sayall(string.format("\n\f3>>>>        \f0Player \f2%s \f3 leaving us, went to see \f1https://vah-clan.ga \f0:D",sdbs:wrapper(getname(cn),cn)))
+    sdbs.say:onPlayerDisconnect(cn,reason)
     sdbs.player.info:unsetuser(cn)
 end
 
@@ -280,14 +353,15 @@ function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
     if (sdbs.player.info:getoldname(cn)) == name then
         if new_role == CR_ADMIN then
             sdbs.player.info.data[cn].role = CR_ADMIN
+            if sdbs.config.onSayAdminRoleChanged then sdbs.say:onPlayerRoleChange(0,cn,name) end
         else
             sdbs.player.info.data[cn].role = CR_DEFAULT
         end
     else
         if sdbs.config.disconnectLoLadmin then 
-            sayall("\n\f3>>>>        \f2An attempt was made to change the name to become a manager, probably in order to troll. Last change")
-            sayall(string.format("\f3>>>>        %s -> %s",sdbs:wrapper(sdbs.player.info:getoldname(cn),cn),sdbs:wrapper(name,cn)))
-            sayall("\f3>>>>        \f2This is prohibited by the regulations in force.")
+            sayall(string.format("\f3%s\f2An attempt was made to change the name to become a manager, probably in order to troll. Last change",sdbs.say.wrappers[0]))
+            sayall(string.format("\f3%s -> %s",sdbs.say:wrapper(sdbs.player.info:getoldname(cn),cn),sdbs.say:wrapper(name,cn)))
+            sayall("\f2This is prohibited by the regulations in force.")
             sdbs.player.info:unsetuser(cn)
             disconnect(cn, DISC_BADNICK)
         else
@@ -302,16 +376,16 @@ function onPlayerNameChange(cn, newname)
         if  not sdbs.config.allowSameName then
             for i = 0, #sdbs.player.info.data do
                 if sdbs.player.info:is(i) and ( sdbs.player.info.data[i].name == newname or sdbs.player.info.data[i].oldname == newname )  then
-                    sayall("\f3>>>>        \f2There was an attempt entrance player with the same name")
-                    sayall(string.format("\f3>>>>        %s -> %s",sdbs:wrapper(sdbs.player.info:getname(cn),cn),sdbs:wrapper(newname,cn)))
-                    sayall("\f3>>>>        \f2Which is prohibited by the rules.")
+                    sayall(string.format("\f3%s\f2There was an attempt entrance player with the same name",sdbs.say.wrappers[0]))
+                    sayall(string.format("\f3%s to %s",sdbs.say:wrapper(sdbs.player.info:getname(cn),cn),sdbs.say:wrapper(newname,cn)))
+                    sayall("\f2Which is prohibited by the rules.")
                     sdbs.player.info:unsetuser(cn)
                     disconnect(cn, DISC_BADNICK)
                     return nil
                 end
             end
         end
-        sayex(string.format("\f3>>>>        \f2Player name changes \f0%s \f2-> \f1%s",sdbs:wrapper(sdbs.player.info:getname(cn),cn),sdbs:wrapper(newname,cn)),cn)
+        sayex(string.format("\f0%s\f2Player name changed. \f1%s \f2to \f1%s",sdbs.say.wrappers[0],sdbs.say:wrapper(sdbs.player.info:getname(cn),cn),sdbs.say:wrapper(newname,cn)),cn)
         sdbs.player.info.data[cn].oldname = sdbs.player.info.data[cn].name
         sdbs.player.info.data[cn].name = newname
     end
