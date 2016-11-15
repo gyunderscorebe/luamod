@@ -30,7 +30,7 @@ __sdbs = {
         -- Говорить всем кто стал админом :D
         onSayAdminRoleChanged = true,
         -- автоопределение режима игры или карты gema
-        autodetectingmode = true,
+        autoDetectingMode = false,
         --Выключить мод если не gema
         tyrnOfModIsNotGema = false,
         configrandommaprot = false --I like randomness
@@ -77,7 +77,7 @@ __sdbs.say = {
         say("\f0Which is prohibited by the rules.")
     end,
     onMapChange = function(self,mapname,mapmode)
-        sayall(string.format("\f0%s\f1Selected playground %s for \f2 %s \f3 mode :D ",self.wrappers[0],mapname,mapmode))
+        sayall(string.format("\f0%s\f1Selected playground %s for \f2 %s \f3 mode :D ",self.wrappers[0],(mapname or "GO..GO.."),( mapmode or "OgOgO")))
     end,
     onPlayerConnect = function(self,flag,info)
         if flag == 0  then sayex(string.format("\f0%s\f1Player \f2%s \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",self.wrappers[0],self:wrapper(info.name,info.cn),info.country, info.iso ,info.ip),info.cn) end
@@ -313,7 +313,7 @@ end
 
 --(string map_name, int game_mode)
 function onMapChange(name,mode)
-    sdbs.game:getmode(mode,name)
+    if sdbs.config.autoDetectingMode then sdbs.game:getmode(mode,name) end
     sdbs.game.mapname = name
     sdbs.say:setCursorInfoState(sdbs.game.mode)
     sdbs.say:onMapChange(name,sdbs.game.mode)
