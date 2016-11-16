@@ -6,40 +6,26 @@ PLUGIN_VERSION = "1.0.5" -- black lua mod
 
 -- Для работы со строками
 
+__sdbs = __sdbs
+
 __sdbs = {
-    name = "vah_sdbs",
+    name = "vah_sdbs.lua",
     path = {
         base = "./",
         lua = "./lua/",
         extra = "./lua/extra/",
         config = "./lua/config/",
-        sdbs = "./lua/scripts/vah_sdbs/"
+        sdbs = "./lua/scripts/vah_sdbs/",
+        webnetdata = "./lua/scripts/vah_sdbs/IpToCountry.csv"
     },
-    config = {
-        defaultDomain = "vah-clan.ga",
-        defaultUser = "root",
-        defaultServer = "frends",
-        -- Авто ресет флаг при потере сбросе флага или гибели игрока
-        resetflag = true,
-        -- Разрешить одинаковые имена
-        allowSameName = false,
-        -- Обворачивает имя игрока в >>>-{ NAME }-> можно изменить
-        wrapperName = true,
-        -- Если игрок сменил имя на другое и хочет стать админом или наоборот админ меняет свое имя, то выкинуть с сервера
-        disconnectLoLadmin = true,
-        -- Говорить всем кто стал админом :D
-        onSayAdminRoleChanged = true,
-        -- автоопределение режима игры или карты gema
-        autoDetectingMode = false,
-        --Выключить мод если не gema
-        tyrnOfModIsNotGema = false,
-        configrandommaprot = false --I like randomness
-    },  
+    config = nil,
     webnet = nil,
+    log = nil,
     say = nil,
     game = nil,
     player = nil
 }
+
 
 -- Задаем пути поиска
 
@@ -48,289 +34,82 @@ package.path = __sdbs.path.sdbs.. "?.lua; " ..__sdbs.path.extra.. "?.lua; " ..__
 -- Подключаем библиотеки
 
 --dofile("lua/scripts/vah_sdbs/function.lua")
+require("config")
 require("function")
 require("fs")
 require("server")
 require("webnet")
-
-__sdbs.say = {
-    setCursorInfoState = function (self,user,server)
-        self.wrappers[0] = "["..(user or self.root.config.defaultUser).."@"..(server or self.root.config.defaultServer).."."..self.root.config.defaultDomain.."]$       "
-        return self.wrappers[0]
-    end,
-    wrappers = {
-        [0] = nil,
-        [1] = ">>>-(",
-        [2] = ")-{",
-        [3] = "}->"
-    },
-    wrapper = function(self,str,cn)
-        if self.root.config.wrapperName then
-            if cn == nil then cn = "NaN" end
-            return string.format("%s%s%s%s%s",self.wrappers[1],cn,self.wrappers[2],str,self.wrappers[3])
-            --setname(cn,name)                        
-        end
-        return str
-    end,
-    onErrorSetUser = function (self, cn, name)
-        say(string.format("\f3%s\f0There was an attempt entrance player with the same name \f2%s",self.wrappers[0],self:wrapper(name,cn)))
-        say("\f0Which is prohibited by the rules.")
-    end,
-    onMapChange = function(self,mapname,mapmode)
-        sayall(string.format("\f0%s\f1Selected playground %s for \f2 %s \f3 mode :D ",self.wrappers[0],(mapname or "GO..GO.."),( mapmode or "OgOgO")))
-    end,
-    onPlayerConnect = function(self,flag,info)
-        if flag == 0  then sayex(string.format("\f0%s\f1Player \f2%s \f1came from \f5%s\f1, \f2%s\f1, IP : \f2%s",self.wrappers[0],self:wrapper(info.name,info.cn),info.country, info.iso ,info.ip),info.cn) end
-        if flag == 1  then  sayex(string.format("\f0%s\f1Player \f2%s \f1came from \f5%s\f1, \f2%s",self.wrappers[0],self:wrapper(info.name,info.cn),info.country, info.iso),info.cn) end
-        if flag == 2  then say(string.format("\f0%s\f3Hello \f2 %s \f3:D ",self.wrappers[0],self:wrapper(info.name,info.cn)),info.cn) end
-    end,
-    onPlayerDisconnect = function(self,cn,reason)
-        sayex(string.format("\f0%s\f0Player \f2%s \f3 leaving us, went to see \f1https://vah-clan.ga \f0:D",self.wrappers[0],self:wrapper(getname(cn),cn)))
-    end,
-    onPlayerRoleChange = function(self,flag,cn,name)
-        if flag == 0 then sayall(string.format("\f0%s\f2is Administrator",self.wrappers[0],self:wrapper(name,cn))) end
-    end
-}
-
-__sdbs.game = {
-    listmode = {
-        [GM_DEMO] = "DEMO",
-        [GM_TDM] = "TDM",
-        [GM_COOP] = "COOP",
-        [GM_DM] = "DM",
-        [GM_SURV] = "SURV",
-        [GM_TSURV] = "TSURV",
-        [GM_CTF] = "CTF",
-        [GM_PF] = "PF",
-        [GM_LSS] = "LSS",
-        [GM_OSOK] = "OSOK",
-        [GM_TOSOK] = "TOSOK",
-        [GM_HTF] = "HTF",
-        [GM_TKTF] = "TKTF",
-        [GM_KTF] = "KTF",
-        [GM_NUM] = "NUM"
-    },
-    getmode = function(self,mode)
-        local m = mode or getgamemode()
-        if self.listmode[m] ~= nil then self.mode = self.listmode[m] else self.mode = "|VAH|" end
-        return self.mode
-    end,
-    mode = nil,
-    mapname = nil,
-}
-
-__sdbs.player = {
-    flag = {
-        time = 5,
-        reset = function (self, cn,flag)
-            if self.root.config.resetflag then flagaction(cn, FA_RESET, flag) end
-        end
-    },
-    info = {
-        data = {},
-        backdata = {},
-        gametime = function (self,cn)
-            if self.data[cn] ~= null then
-                return getsvtick() - self.data[cn].starttime
-            end
-            return 0
-        end,
-        is = function (self, cn)
-            if self.data[cn] ~=nil then return true else return false end
-        end,
-        unsetuser = function (self,cn)
-            if self:is(cn) then self.data[cn] = nil end
-        end,
-        setuser = function (self, cn, enet )
-            if isconnected(cn) and cn >= 0 and cn < maxclient() then                
-                if not self:is(cn) then
-                    local name = getname(cn)
-                    if not self.root.config.allowSameName  then
-                        -- Работает в 2 раза быстрее 
-                        for i = 0, #self.data do
-                            if self:is(i) and ( self.data[i].name == name or self.data[i].oldname == name ) then
-                                self.root.say:onErrorSetUser(cn,name)
-                                self:unsetuser(cn)
-                                disconnect(cn, DISC_BADNICK)
-                                return nil
-                            end
-                        end
-                        -- Работает в 2 раза медленнее
---[[
-                        for i, val in ipairs(self.data) do
-                            if self:is(i) and val == name then
-                                sayall(string.format("\f2There was an attempt entrance player with the same name \f3%s. \f0Which is prohibited by the rules",name))
-                                self:unsetuser(cn)
-                                disconnect(cn, DISC_BADNICK)
-                                return nil
-                            end
-                        end
-]]
-                    end
-                    
-
-                    local data = { iso = nil, country = nil, ip = nil }
-
-                    if self.root.webnet ~= nil then 
-                        data = self.root.webnet:geo(cn)
-                    end
-
-                    self.data[cn] = {
-                        cn = cn,
-                        name = name,
-                        oldname = name,
-                        iso = data.iso,
-                        country = data.country,
-                        ip = data.ip,
-                        role = isadmin(cn), 
-                        frags = nil,
-                        flagscore = nil,
-                        deaths = nil,
-                        teamkills = nil,
-                        shotdamage = nil,
-                        damage = nil,
-                        points = nil,
-                        forced = nil,
-                        events = nil,
-                        lastdisc = nil,
-                        reconnections = nil,
-                        team = nil,
-                        starttime = getsvtick(),
-                        endtime = self:gametime(cn)
-                    }
-                    return self.data[cn]
-                end
-            end
-            return nil;
-        end,
-        get = function (self, cn) 
-            if isconnected(cn) and cn >= 0 and cn < maxclient() then
-                if self:is(cn) then
-                    return self.data[cn]
-                end
-            end
-            return {
-                        cn = nil,
-                        name = nil,
-                        oldname = nil,
-                        iso = nil,
-                        country = nil,
-                        ip = nil,
-                        role = nil, 
-                        frags = nil,
-                        flagscore = nil,
-                        deaths = nil,
-                        teamkills = nil,
-                        shotdamage = nil,
-                        damage = nil,
-                        points = nil,
-                        forced = nil,
-                        events = nil,
-                        lastdisc = nil,
-                        reconnections = nil,
-                        team = nil,
-                        starttime = nil,
-                        endtime = nil
-                    }
-        end,
-        getcn = function (self, name)
-            for i = 0, maxclient() - 1 do
-                if self:is(i) and self.data[i].name == name then return self.data[i].cn end
-            end
-            return nil
-        end,
-        getname = function(self, cn)
-            local data = self:get(cn)
-            return data.name
-        end,
-        getoldname = function(self, cn)
-            local data = self:get(cn)
-            return data.oldname
-        end,
-        getcountry = function(self, cn)
-            local data = self:get(cn)
-            return data.country
-        end,
-        getiso = function(self, cn)
-            local data = self:get(cn)
-            return data.iso
-        end,
-        getip = function(self, cn)
-            local data = self:get(cn)
-            return data.ip
-        end,
-        whocn = function (self,cn)
-            if self:is(cn) then 
-                return {
-                    name = self.data[cn].name,
-                    iso = self.data[cn].iso,
-                    country = self.data[cn].country,
-                    cn = self.data[cn].cn
-                }
-            end
-            return nil
-        end,
-        whoadmin = function ()
-            for i = 0, maxclient() - 1 do
-                if self:is(cn) and self.data[i].role == CR_ADMIN then
-                    return {
-                        name = self.data[i].name,
-                        iso = self.data[i].iso,
-                        country = self.data[i].country,
-                        cn = self.data[i].cn
-                    }
-                end
-            end
-            return nil
-        end
-    }
-}
+require("say")
+require("game")
+require("player")
+require("commands")
 
 __sdbs.new = function ()
-    local self = setmetatable({},{__index=__sdbs})
+    local self =  setmetatable({},{__index=__sdbs})
     return self
 end
 
-sdbs = __sdbs.new();
+sdbs = sdbs
+sdbs = __sdbs:new();
 
 -- lookup global function
 
 function onInit()
     --sdbs.cursor = getservername()
+    sdbs.webnet = webnet:new(sdbs.path.webnetdata)
+
+    sdbs.log.root = setmetatable({},{__index = sdbs})
     sdbs.say.root = setmetatable({},{__index = sdbs})
+
     sdbs.game.root = setmetatable({},{__index = sdbs})
+    sdbs.game.vote.root = setmetatable({},{__index = sdbs})
+    sdbs.game.mode.root = setmetatable({},{__index = sdbs})
+
     sdbs.player.root = setmetatable({},{__index = sdbs})
     sdbs.player.flag.root = setmetatable({},{__index = sdbs})
     sdbs.player.info.root = setmetatable({},{__index = sdbs})
-    
-    sdbs.say:setCursorInfoState()
+    sdbs.player.commands.root = setmetatable({},{__index = sdbs})
 
-    sdbs.webnet = webnet:new(sdbs.path.sdbs.."IpToCountry.csv")
+    -- sdbs.say:setCursorInfoState()
 end
 
 function onDestroy()
 end
 
+        -- GM_DEMO - -1,GM_TDM - 0,GM_COOP - 1,GM_DM - 2,
+        -- GM_SURV - 3,GM_TSURV - 4,GM_CTF - 5,GM_PF - 6,
+        -- GM_LSS - 9,GM_OSOK - 10,GM_TOSOK - 11,GM_HTF - 13,
+        -- GM_TKTF - 14,GM_KTF - 15,GM_NUM - 22
 --(string map_name, int game_mode)
-function onMapChange(name,mode)
-    if sdbs.config.autoDetectingMode then sdbs.game:getmode(mode,name) end
-    sdbs.game.mapname = name
-    sdbs.say:setCursorInfoState(sdbs.game.mode)
-    sdbs.say:onMapChange(name,sdbs.game.mode)
+function onMapChange(mapname,modemap)
+    if sdbs.config.autoDetectingMode then sdbs.game.mode:getmode(modemap,mapname) end
+    sdbs.game.mapname = mapname
+    -- sdbs.say:setCursorInfoState(sdbs.game.mode.mode,sdbs.game.mapname)
+    sdbs.game.mapgema = sdbs.game:chkGema(sdbs.game.mapname)
+    
+    if sdbs.config.map.say.loadMap and not sdbs.game.mapgema then sdbs.say:onMapChange(0, sdbs.game.mapname, sdbs.game.mode.mode) end    
+    if sdbs.config.map.say.loadMapGema and sdbs.game.mapgema then sdbs.say:onMapChange(1, sdbs.game.mapname, sdbs.game.mode.mode) end
+    
+    if sdbs.config.map.team.auto.map == true and ( modemap == GM_TDM or modemap == GM_TSURV or modemap == GM_CTF or modemap == GM_TOSOK  or modemap == GM_TKTF ) then
+        if sdbs.game.mapgema and not sdbs.config.team.auto.gema then setautoteam(false) else setautoteam(true) end
+    end
 end
 
 
 --(int actor_cn)
 function onPlayerConnect(cn)
     local info = sdbs.player.info:setuser(cn)
+    local cn = sdbs.player.info:whoadmin()
     if info ~= nil then
-        if isadmin(cn) then 
-            sdbs.say:onPlayerConnect(0,info)
+        if cn ~= nil then
+            sdbs.say:onPlayerConnect(0,info,cn)
         else
             sdbs.say:onPlayerConnect(1,info)
         end
         sdbs.say:onPlayerConnect(2,info)
+        --sdbs.log:inf("Player connect",cn)
     end
+    --setautoteam(false)
 end
 
 --(int actor_cn, int reason)
@@ -339,6 +118,13 @@ end
 
 --(int actor_cn, int reason)
 function onPlayerDisconnect(cn, reason)
+  if reason == DISC_MASTERMODE then
+	sdbs.say:err("\f0" ..getname(cn).. "\f2 could \f0not \f2connect. [\f0Mastermode\f2]")
+  elseif reason == DISC_MAXCLIENTS then
+	sdbs.say:err("\f0" ..getname(cn).. "\f2 could \f0not \f2connect. [\f0Server full\f2]")
+  elseif reason == DISC_BANREFUSE then
+	sdbs.say:err("\f0" ..getname(cn).. "\f2 could \f0not \f2connect. [\f0Banned\f2]")
+  end
     sdbs.say:onPlayerDisconnect(cn,reason)
     sdbs.player.info:unsetuser(cn)
 end
@@ -356,12 +142,11 @@ function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
             if sdbs.config.onSayAdminRoleChanged then sdbs.say:onPlayerRoleChange(0,cn,name) end
         else
             sdbs.player.info.data[cn].role = CR_DEFAULT
+            if sdbs.config.onSayAdminRoleChanged then sdbs.say:onPlayerRoleChange(1,cn,name) end
         end
     else
         if sdbs.config.disconnectLoLadmin then 
-            sayall(string.format("\f3%s\f2An attempt was made to change the name to become a manager, probably in order to troll. Last change",sdbs.say.wrappers[0]))
-            sayall(string.format("\f3%s -> %s",sdbs.say:wrapper(sdbs.player.info:getoldname(cn),cn),sdbs.say:wrapper(name,cn)))
-            sayall("\f2This is prohibited by the regulations in force.")
+            sdbs.say:onPlayerRoleChange(2,cn,name)
             sdbs.player.info:unsetuser(cn)
             disconnect(cn, DISC_BADNICK)
         else
@@ -376,16 +161,14 @@ function onPlayerNameChange(cn, newname)
         if  not sdbs.config.allowSameName then
             for i = 0, #sdbs.player.info.data do
                 if sdbs.player.info:is(i) and ( sdbs.player.info.data[i].name == newname or sdbs.player.info.data[i].oldname == newname )  then
-                    sayall(string.format("\f3%s\f2There was an attempt entrance player with the same name",sdbs.say.wrappers[0]))
-                    sayall(string.format("\f3%s to %s",sdbs.say:wrapper(sdbs.player.info:getname(cn),cn),sdbs.say:wrapper(newname,cn)))
-                    sayall("\f2Which is prohibited by the rules.")
+                    sdbs.say:onPlayerNameChange(0,cn,newname)
                     sdbs.player.info:unsetuser(cn)
                     disconnect(cn, DISC_BADNICK)
                     return nil
                 end
             end
         end
-        sayex(string.format("\f0%s\f2Player name changed. \f1%s \f2to \f1%s",sdbs.say.wrappers[0],sdbs.say:wrapper(sdbs.player.info:getname(cn),cn),sdbs.say:wrapper(newname,cn)),cn)
+        sdbs.say:onPlayerNameChange(1,cn,newname)
         sdbs.player.info.data[cn].oldname = sdbs.player.info.data[cn].name
         sdbs.player.info.data[cn].name = newname
     end
@@ -393,4 +176,115 @@ end
 
 function onFlagAction(cn, action, flag)
     if action == FA_DROP or action == FA_LOST then sdbs.player.flag:reset(cn,flag) end
+end
+
+-- int (vote error); (int actor_cn, int type, string text, int number, int vote_error)
+function onPlayerCallVote (cn, type, text, number, vote_error)
+    
+    local info = sdbs.player.info:get(cn)
+    if info.cn ~=nil then
+        if type == SA_AUTOTEAM and not getautoteam() then
+            voteend(VOTE_NO)
+            say("\f3You don't have the permission to set autoteam on", cn)
+        end
+        
+    end
+    
+    
+--[[    
+1
+    if type == SA_AUTOTEAM and not getautoteam() then
+        voteend(VOTE_NO)
+        say("\f3You don't have the permission to set autoteam on", cn)
+    elseif (type == SA_FORCETEAM) or (type == SA_SHUFFLETEAMS) then
+        say("\f3You don't have the permission to vote that", cn)
+        voteend(VOTE_NO)
+    elseif type == SA_MAP then
+        if number ~= GM_CTF then
+            if number == 21 then
+                if nextmap ~= nil then setnextmap(nextmap) end
+                say("\f3You don't have the permission to use this command", cn)
+            else
+                say("\f3Only CTF mode is allowed", cn)
+            end
+            voteend(VOTE_NO)
+        elseif not isGema(text) then
+            say("\f3This map doesn't seem to be a gema", cn)
+            voteend(VOTE_NO)
+        elseif ismodo(cn) then
+            voteend(VOTE_YES)
+        end
+    elseif type == SA_MASTERMODE and not isadmin(cn) then
+        if number ~= 0 then
+            say("\f3You don't have the permission to vote that", cn)
+            voteend(VOTE_NO)
+        end
+    elseif type == SA_KICK and ismodo(cn) then
+        voteend(VOTE_YES)
+    elseif type == SA_BAN and ismodo(cn) then
+        voteend(VOTE_YES)
+    end
+
+2
+
+  if type == SA_MAP and not isadmin(cn) then
+    if not votes[number] then
+      voteend(VOTE_NO)
+    end
+  end
+  if ismuted[cn] then
+    voteend(VOTE_NO)
+  end
+  if (type == SA_GIVEADMIN) and getname(cn) ~= protectedname then
+    voteend(VOTE_NO)
+    say("\f0Vote Type Disallowed", cn)
+  end
+  
+    if (type == SA_AUTOTEAM) and (not getautoteam()) then
+        voteend(VOTE_NO)
+    elseif (type == SA_FORCETEAM) or (type == SA_SHUFFLETEAMS) then
+        voteend(VOTE_NO)
+end
+
+3
+
+	if (type == SA_MAP) and not (number == GM_CTF) then voteend(VOTE_NO) end
+        if (type == SA_GIVEADMIN) or (type == SA_CLEARDEMOS) then voteend(VOTE_NO) end
+ -- if (type == SA_BAN) or (type == SA_KICK) or (type == SA_REMBANS) or (type == --SA_GIVEADMIN) then
+  --      voteend(1)
+ --   end
+--if number ~= 5 then
+--voteend
+
+--if (type == SA_BAN) or (type == SA_KICK) then
+--voteend(1)
+--end
+
+
+setautoteam(false)
+]]
+end
+
+--(int result, int owner_cn, int type, string text, int number
+function onVoteEnd()
+    
+end
+
+--(int actor_cn, int vote)
+function onPlayerVote(cn, vote)
+    
+end
+
+-- (int actor_cn, int sound
+function onPlayerSayVoice(cn,sound)
+
+end
+
+--(int sender_cn, string message)
+function onPlayerSayText(cn, text)
+
+end
+
+function LuaLoop()
+
 end

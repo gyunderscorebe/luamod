@@ -1,4 +1,3 @@
-
 -- функции общего назначения
 
 local name = "function.lua"
@@ -70,33 +69,6 @@ function reversenumber(num)
   return tonumber(str) -- преобразуем обратно в число и возвращаем
 end
 
-function isTeammode(mode) -- gamemode
-    if mode == 0 or mode == 4 or mode == 5 or mode == 7 or mode == 11 or mode == 13 or mode == 14 then
-	return true
-    else
-	return false
-    end
-end
-
-function say(text, cn)
-    if cn == nil then cn = -1 end
-    clientprint(cn, text)
-end
-
-function sayall(text)
-    clientprint(-1, text)
-end
-
-function sayex(text, tcn )
-    if tcn == nil then tcn = -1 end
-    clientprint(-1, text,tcn)
-end
-
-function sayfile(path)
-    for line in io.lines(path) do
-        sayall(line)
-    end
-end
 
 
 print ("dofile " ..name)
