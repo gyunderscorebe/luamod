@@ -24,6 +24,19 @@ return {
                 return self.action[mode]
             end
             return nil
+        end,
+        flag_action =  function(self,cn,action,flag)
+            self.fa = {
+                [FA_DROP] = function(self,cn,action,flag)
+                    if self.parent.parent.cnf.flag.reset.drop then flagaction(cn,FA_RESET,flag) end
+                    if self.parent.parent.cnf.flag.reset.say_drop then self.parent.parent.say:sallexme(cn,string.format("\fPPlayer \f3%s \fPflag dropped, probably wanted to hide \fX:)",self.parent.parent.cn.data[self.parent.parent.cn.data_cn[cn]].name)) end
+                end,
+                [FA_LOST] = function(self,cn,action,flag)
+                    if self.parent.parent.cnf.flag.reset.lost then flagaction(cn,FA_RESET,flag) end
+                    if self.parent.parent.cnf.flag.reset.say_lost then self.parent.parent.say:sallexme(cn,string.format("\fPPlayer loses \f3%s \fPflag, probably due to death \f4:(",self.parent.parent.cn.data[self.parent.parent.cn.data_cn[cn]].name)) end
+                end
+            }
+            if self.fa[action]~= nil then  self.fa[action](self,cn,action,flag) end
         end
     },
     -- MODE

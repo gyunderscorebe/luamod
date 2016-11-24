@@ -64,9 +64,9 @@ return {
         ADMIN = CR_ADMIN,
         DEFAULT = CR_DEFAULT
     },
-    get_role = function(self,reasson)
-        if self.d_reasson[reasson] ~= nil then
-            return self.d_reasson[reasson]
+    get_role = function(self,role)
+        if self.roles[role] ~= nil then
+            return self.roles[role]
         end
         return nil
     end,
@@ -95,7 +95,7 @@ return {
     add_cn = function(self,cn)
         self.parent.log:i('AddCn...',cn)
         if self.data_cn[cn] == nil then
-            if cn == 1 then setip(1,'212.20.45.40') end
+            --if cn == 1 then setip(1,'212.20.45.40') end
             local name = getname(cn)
             local ip = getip(cn)
             table.insert(self.data, {
@@ -110,13 +110,16 @@ return {
                 iso = nil,
                 city = nil,
                 geo = '',
-                role = self:get_role('DEFAULT'),
-                referee = self:get_role('DEFAULT'),
+                role = nil,
+                referee = nil,
                 disconnect_reason = false
             })
 
+
             self.data_cn[cn] = #self.data
             self.data[self.data_cn[cn]].dcn = self.data_cn[cn]
+            self.data[self.data_cn[cn]].role = self:get_role('DEFAULT')
+            self.data[self.data_cn[cn]].referee = self:get_role('DEFAULT')
             if isadmin(cn) then self.data[self.data_cn[cn]].role = self:get_role('ADMIN') end
 
             if self.parent.cnf.geo.activate then
@@ -405,36 +408,30 @@ return {
             end
         end
     end,
-    chk_commands = function(self,text)
-        local parts = split(text, " ")
-        local command, args = parts[1], self.parent.fn:slice(parts, 2)
+    chk_commands = function(self,cn,text,team,me)
+        local data = self.parent.fn:split(text, " ")
+        local command, args = data[1], self.parent.fn:slice(data, 2)
+        local admin, referee,name = false, false, ''
+        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
+            admin = self.data[self.data_cn[cn]].role
+            referee =self.data[self.data_cn[cn]].referee
+            name =self.data[self.data_cn[cn]].name
+        else return true end
         if self.parent.cmd.commands[command] ~= nil then
-            local params, callback = self.parent.cmd.commands[command][1], self.parent.cmd.commands[command][2]
-            if (self.data[self.data_cn[cn]].role and params[1]) or (self.data[self.data_cn[cn]].referee and params[2]) or params[3] then
-                callback(cn, args)
-                if not params[4] then
-                    return PLUGIN_BLOCK
-                elseif self.data[self.data_cn[cn]].role or self.data[self.data_cn[cn]].referee then
-                    for i = 0, maxclient() - 1 do
-                        if isconnected(i) and i ~= cn then
-                            say("\fP" .. getname(cn) .. ": \f0" .. text, i)
-                        end
-                    end
-                    return PLUGIN_BLOCK
-                end
+            local cmd = self.parent.cmd.commands[command]
+            if ( admin == self:get_role("ADMIN") and cmd.protected[1]) or ( referee == self:get_role("ADMIN") and cmd.protected[2] ) or cmd.protected[3] then
+                cmd:cfn(cn, args,name)
+                if not cmd.protected[4] then return true end
             else
-                return PLUGIN_BLOCK
+                return true
             end
-        elseif string.byte(command,1) == string.byte("!",1) then
-            return PLUGIN_BLOCK
-        elseif isadmin(cn) or ismodo(cn) then
-            for i = 0, maxclient() - 1 do
-                if isconnected(i) and i ~= cn then
-                    say("\fP" .. getname(cn) .. ": \f0" .. text, i)
-                end
-            end
-            return PLUGIN_BLOCK
+        elseif string.byte(command,1) == string.byte("$",1) then
+            self.parent.say:sme(cn,'\f2This team does not have, type \f5$list cmd \f2to list.')
+            return true
         end
+        self.parent.say:allexme(cn,text)
+        --self.parent.say:sme(cn,text)
+        return true
     end,
     init = function(self,obj)
         self.parent = obj

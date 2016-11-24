@@ -46,15 +46,20 @@ end
 -- (int sender_cn, string text, bool team, bool me)
 function onPlayerSayText(cn,text,team,me)
     --sdbs.say:me(cn,text)
-    --sdbs.say:pm(cn,'PM player cn = '..(tostring(math.abs(cn -1))),math.abs(cn -1))
+    --sdbs.say:to(cn,math.abs(cn -1),'to player cn = '..(tostring(math.abs(cn -1))))
+    --sdbs.say:pm(cn,math.abs(cn -1),'PM player cn = '..(tostring(math.abs(cn -1))))
     --sdbs.say:all(cn,'SayALL')
-    --sdbs.say:allex(cn,'SayAllEx cn = '..(tostring(math.abs(cn -1))),math.abs(cn -1))
-    return sdbs.cn:chk_commands(cn,text)
+    --sdbs.say:allex(cn,math.abs(cn -1),'SayAllEx cn = '..(tostring(math.abs(cn -1))))
+    if sdbs.cn:chk_commands(cn,text,team,me) then
+        return PLUGIN_BLOCK
+    end
     --sdbs.say:file('sdbs.txt')
 end
 --(int actor_cn, int action, int flag)
 -- Действия с флагом
 function onFlagAction(cn, action, flag)
+    sdbs.gm.flag:flag_action(cn, action, flag)
+    --return PLUGIN_BLOCK
 end
 -- (string map_name, int game_mode)
 -- Активация карты

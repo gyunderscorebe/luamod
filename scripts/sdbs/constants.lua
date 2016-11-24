@@ -21,5 +21,8 @@ SAY_MAGENTA = '\fX'
 -- color
 
 C_CODES = { "\f0", "\f1", "\f2", "\f3", "\f4", "\f5", "\f6", "\f7", "\f8", "\f9", "\fA", "\fB", "\fC", "\fD", "\fE", "\fF", "\fG", "\fH", "\fI", "\fJ", "\fK", "\fL", "\fM", "\fN", "\fO", "\fP", "\fQ", "\fR", "\fS", "\fT", "\fU", "\fV", "\fW", "\fX", "\fY", "\fZ", "\fb"}
+CC_LOOKUP = { "\\f0", "\\f1", "\\f2", "\\f0", "\\f2", "\\f5", "\\f6", "\\f7", "\\f8", "\\f9", "\\fA", "\\fB", "\\fC", "\\fD", "\\fE",
+  "\\fF", "\\fG", "\\fH", "\\fI", "\\fJ", "\\fK", "\\fL", "\\fM", "\\fN", "\\fO", "\\fP", "\\fQ", "\\fR", "\\fS", "\\fT",
+  "\\fU", "\\fV", "\\fW", "\\fX", "\\fY", "\\fZ", "\\fb"}
 
 logline(LOG_INFO,'SDBS: Player SYSTEM says: Module function constants is OK')

@@ -117,6 +117,13 @@ return {
         return C_CODES[math.random(1, #C_CODES)]
     end,
 
+    colorize_text = function (self,text)
+      for i = 1, #C_CODES do
+        text = text:gsub(CC_LOOKUP[i], C_CODES[i])
+      end
+      return text
+    end,
+
     init = function(self,obj)
        self.parent = obj
         --self.parent = setmetatable( {}, { __index = obj } )

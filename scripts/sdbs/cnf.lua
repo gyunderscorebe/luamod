@@ -16,7 +16,7 @@ return {
         wrapp = {
             active = true,
             randomcolor = false,
-            color = SAY_NORMAL,
+            color = SAY_INFO,
             format = ">>>~<NAME>~>(<CN>)",
         },
         text = {
@@ -54,6 +54,18 @@ return {
             load_map = true,
             -- Сказать что это карта гема
             load_map_gema = true
+        }
+    },
+    flag = {
+        reset = {
+            -- флаг возращается на место при сбросе флага игроком
+            drop = false,
+            -- сказать об этом
+            say_drop = true,
+            -- флаг возращается на место при гибели игрока
+            lost = true,
+            -- сказать об этом
+            say_lost = true
         }
     },
     cn = {
