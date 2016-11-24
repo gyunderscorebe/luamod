@@ -1,21 +1,31 @@
--- Нендл вызова сервера
+-- wait functions
 
 --(int actor_cn)
 function onPlayerPreconnect (cn)
     sdbs.cn:preconnect(cn)
+    --return PLUGIN_BLOCK
 end
 --(int actor_cn)
-function onPlayerConnect(cn)   
+function onPlayerConnect(cn) 
     sdbs.cn:connect(cn)
+    --return PLUGIN_BLOCK
 end
 --(int actor_cn, int reason)
 function onPlayerDisconnect(cn,reasson)
     sdbs.cn:disconnect(cn,reasson)
+    --return PLUGIN_BLOCK
 end
 --(int actor_cn, string new_name)
 -- Смена имени игроком
-function onPlayerNameChange(cn, nename)
-    sdbs.cn:rename(cn,nename)
+function onPlayerNameChange(cn, newname)
+   sdbs.cn:rename(cn,newname)
+   return PLUGIN_BLOCK
+end
+function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
+
+    if sdbs.cn:role_change(cn, new_role, hash, pwd, isconnect) then
+        return PLUGIN_BLOCK
+    end
 end
 --(int target_cn, int actor_cn, bool gib, int gun) 
 -- Смерть игрока
@@ -33,18 +43,23 @@ end
 --Игрок что то сказал в консоль
 function onPlayerSayVoice(cn, sound)
 end
+-- (int sender_cn, string text, bool team, bool me)
+function onPlayerSayText(cn,text,team,me)
+    --sdbs.say:me(cn,text)
+    --sdbs.say:pm(cn,'PM player cn = '..(tostring(math.abs(cn -1))),math.abs(cn -1))
+    --sdbs.say:all(cn,'SayALL')
+    --sdbs.say:allex(cn,'SayAllEx cn = '..(tostring(math.abs(cn -1))),math.abs(cn -1))
+    return sdbs.cn:chk_commands(cn,text)
+    --sdbs.say:file('sdbs.txt')
+end
 --(int actor_cn, int action, int flag)
 -- Действия с флагом
 function onFlagAction(cn, action, flag)
-    if action == FA_DROP or action == FA_LOST then
-        if sdbs.cnf.Flag.autoReset then
-            if getgamemode() == GM_CTF then flagaction(cn,FA_RESET,flag) end
-        end
-    end
 end
 -- (string map_name, int game_mode)
 -- Активация карты
 function onMapChange(name, mode)
-    sdbs.log:w('On Map Change')
-    if sdbs.cnf.Game.autoTeam  and ( modemap == GM_TDM or modemap == GM_TSURV or modemap == GM_CTF or modemap == GM_TOSOK  or modemap == GM_TKTF ) then setautoteam(true) end
+    sdbs.gm.map:set_info(name, mode)
 end
+
+sdbs.log:i('Require module handlers is OK')

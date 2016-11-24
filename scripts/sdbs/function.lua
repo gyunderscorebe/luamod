@@ -1,7 +1,6 @@
 -- функции общего назначения
 
 return {
-
     split = function(self,p,d)
         local t, ll
         t={}
@@ -16,7 +15,7 @@ return {
                 table.insert(t, string.sub(p,ll))
                 break
             end
-            end
+        end
         return t
     end,
 
@@ -41,6 +40,14 @@ return {
         return result
     end,
 
+    -- ({ ['pattern'] = 'replacement' [, n] })
+    str_replace = function(self,str,arg)
+        for k,v in pairs(arg) do
+            str = str:gsub(k,v)
+        end
+        return str
+    end,
+
     ltrim = function(self, s) -- remove leading whitespaces
         return (s:gsub("^%s*", ""))
     end,
@@ -63,9 +70,57 @@ return {
       return (string.toupper(str1) == string.toupper(str2))
     end,
 
-    reversenumber = function(self, num)
+    reverse_number = function(self, num)
       local str = tostring(num) -- преобразуем число в строку
       str = string.reverse(str) -- переворачиваем строку
       return tonumber(str) -- преобразуем обратно в число и возвращаем
+    end,
+
+    -- проверка, что переменная это число, строка или булевский тип)
+    is_valid_type = function (self,value_type)
+        return "number" == value_type or 
+                "boolean" == value_type or 
+                "string" == value_type
+    end,
+
+    -- конвертация переменной в строку
+    value_to_str = function (self,value)
+        local value_type = type(value)
+        if "number" == value_type or "boolean" == value_type then
+            result = tostring(value)
+        else  -- assume it is a string
+            result = string.format("%q", value)
+        end
+        return result
+    end,
+
+    -- ( string name, string path )
+    load = function(self,name,path)
+        path = path or name
+        self.parent[name] = require(path)
+        if self.parent[name].init ~= nil then
+            self.parent[name]:init(self.parent)
+        else
+            if self.parent.C_LOG then logline(2,string.format('SDBS: Player SYSTEM says: Module %s init is OK',name)) end
+        end
+    end,
+
+    backup_file = function(self, file)
+        os.execute("cp --backup=t "..file.." "..file..".back")
+    end,
+
+    copy_file = function(self, from,to)
+        os.execute("cp "..from.." "..to)
+    end,
+
+    random_color = function ()
+        return C_CODES[math.random(1, #C_CODES)]
+    end,
+
+    init = function(self,obj)
+       self.parent = obj
+        --self.parent = setmetatable( {}, { __index = obj } )
+        --self.parent = setmetatable( {}, { __index = obj, __newindex = obj } )
+       if self.parent.C_LOG then logline(2,'SDBS: Player SYSTEM says: Module function init is OK') end
     end
 }
