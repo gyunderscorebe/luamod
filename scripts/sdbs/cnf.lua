@@ -12,12 +12,13 @@ return {
             color = SAY_GRAY,
             format = "[<NAME>@<SERVER>.<DOMAIN>]$"
         },
-        -- обертка имени игрока. типа >>>-{<NAME>}-> (0)
+        -- обертка имени игрока. типа >>>-{<NAME>}-> (0). а также задание параметров отображения имени если даже active = false
         wrapp = {
-            active = false,
+            active = true,
             randomcolor = true,
             color = SAY_INFO,
-            format = ">>>~<NAME>~>(<CN>)",
+            delimiter = SAY_LIGHTGRAY..' :',
+            format = '<CN> <NAME>', --">>>~<NAME>~>(<CN>)"
         },
         text = {
             color = SAY_TEXT
@@ -49,13 +50,22 @@ return {
             auto = {
                 map = true,
                 gema = false
+            },
+            mode = {
+                TDM = true,
+                TSURV = true,
+                CTF = true,
+                TOSOK = true,
+                TKTF = true,
             }
         },
         say = {
             -- Сказать какая карта загружена
             load_map = true,
             -- Сказать что это карта гема
-            load_map_gema = true
+            load_map_gema = true,
+            --сказать о состоянии autoteam когда карта загружена
+            autoteam = true
         }
     },
     flag = {
@@ -65,12 +75,18 @@ return {
             -- сказать об этом
             say_drop = true,
             -- флаг возращается на место при гибели игрока
-            lost = false,
+            lost = true,
             -- сказать об этом
             say_lost = true
         }
     },
     cn = {
+        motd_str = {
+            fix = '\n\t\t\t\f9Press F11 to display full information about the clan.',
+            connect = '\f9INFORMATION\n\t\f2SITE: http://vah-clan.ga\n\tEMAIL: admin@vah-clan.ga\n\tIRC: freenode #vah\n\tWIKI: http://wiki.cubers.net/action/view/VAH_clan\n\tFORUM: http://forum.cubers.net/thread-8744.html\n\t\f0enter \f3$help \f0in console to see a list of commands',
+            change_map = '',
+            change_map_gema = ''
+        },
         -- сказать всем что игрок на поле
         say_connect = true,
         -- поприветствовать игрока
@@ -105,6 +121,13 @@ return {
         not_allow_old_same_name = false,
         -- сказать всем что игрока выкинули за переименование если правило это запрещает
         say_not_allow_old_same_name = true,
-
+        -- проверять имена на запрещенные слова при connect и rename
+        active_chkeck_ban_name = true,
+        -- сказать всем что игрока выкинули за это если правило это запрещает
+        say_active_chkeck_ban_name = true,
+        -- чек лист с запрещенными состовляющими ника )))
+        chkeck_ban_name_list = {
+            'idioto', 'unarme', 'bich', 'stef'
+        }
     }
 }

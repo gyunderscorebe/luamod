@@ -7,7 +7,7 @@ LOG_ERR = 4
 -- say messages
 -- 0  green, 1 blue, 2 yellow, 3 red, 4 gray, 5 white, 9 orange, 
 SAY_TEXT = '\f2'
-SAY_PRIVATE = '\f7(\f3PM\f7) '
+SAY_PRIVATE = '\f1(\f3PM\f4) '
 SAY_NORMAL = '\f0'
 SAY_INFO = '\f9\fB'
 SAY_WARN = '\f9'

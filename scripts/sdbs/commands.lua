@@ -38,7 +38,7 @@ return {
             cfn = function (self,cn, args)
                 self.parent.log:i(" viewed $1",cn)
                 if args[1] == '-h' then self.parent.say:me(cn,self.help) return true end
-                self.parent.say:allexme(cn, self.parent.fn:colorize_text("!!!!!!!!! F1 PLLEEEAAAASSSSSEEEEEE !!!!!!!!!!!!!"))
+                self.parent.say:allexme(cn, "!!!!!!!!! F1 PLLEEEAAAASSSSSEEEEEE !!!!!!!!!!!!!")
             end,
             help = '\f1Joke. \f0$1 - > \3F1 \f2:) \fPFormat: \f0$1'
         },
@@ -87,19 +87,27 @@ return {
                     elseif args[1] == 'ADMIN' or args[1] == '2' and self.parent.cn:chk_admin(cn) then
                         self.parent.say:sme(cn,self.ADMIN)
                     else 
-                        self.parent.say:sme(cn,'You do not have rights to view.',_,_,_SAY_WARN)
+                        self.parent.say:sme(cn,'\f3You do not have rights to view.',_,_,_SAY_WARN)
                     end
                 end                
             end
         }
 
+        local list = ''
         for k,_ in pairs(self.commands) do
             self.commands[k].parent = obj
-            if self.commands[k].protected[3] then self.commands['$help'].AVAIABLE = '\fP'..self.commands['$help'].AVAIABLE..' \f3| \fP'..k
-                elseif self.commands[k].protected[2] then self.commands['$help'].PROTECTED = self.commands['$help'].PROTECTED..' \f3| \fP'..k
-                elseif self.commands[k].protected[1] then self.commands['$help'].PROTECTED = self.commands['$help'].ADMIN..' \f3| \fP'..k
+            if self.commands[k].protected[3] then
+                self.commands['$help'].AVAIABLE = '\fP'..self.commands['$help'].AVAIABLE..'\fP'..k..' \f3| '
+            elseif self.commands[k].protected[2] then
+                self.commands['$help'].PROTECTED = self.commands['$help'].PROTECTED..'\fP'..k..' \f3| '
+            elseif self.commands[k].protected[1] then
+                self.commands['$help'].ADMIN = self.commands['$help'].ADMIN..'\fP'..k..' \f3| '
             end
         end
+        --sub(0,#self.data[self.data_cn[cn]].geo-2)
+        self.commands['$help'].AVAIABLE = self.commands['$help'].AVAIABLE:sub(0,#self.commands['$help'].AVAIABLE-2)
+        self.commands['$help'].PROTECTED = self.commands['$help'].PROTECTED:sub(0,#self.commands['$help'].PROTECTED-2)
+        self.commands['$help'].ADMIN = self.commands['$help'].ADMIN:sub(0,#self.commands['$help'].ADMIN-2)
         --self.commands['$help'].AVAIABLE = self.commands['$help'].AVAIABLE:sub(0,-9)
         --self.commands['$help'].PROTECTED = self.commands['$help'].PROTECTED:sub(0,-9)
         --self.commands['$help'].ADMIN = self.commands['$help'].ADMIN:sub(0,#self.commands['$help'].ADMIN-9)

@@ -128,22 +128,39 @@ return {
             self.parent.parent.log:w("Map mode  "..self.mode_str)
             self.parent.parent.log:w("Map is gema "..tostring(self.mode_gema))
             self.parent.parent.log:w("Map preset autoteam is "..tostring(getautoteam()))
-            if  self:is_gema_map()  then
-                setautoteam(self.parent.parent.cnf.map.team.auto.gema)
+            
+            if self.parent.parent.cnf.map.team.auto.map and self.parent.parent.cnf.map.team.mode[self.mode_str] ~= nil and self.parent.parent.cnf.map.team.mode[self.mode_str] == true then
+                if  self:is_gema_map()  then
+                    setautoteam(self.parent.parent.cnf.map.team.auto.gema)
+                else
+                    setautoteam(self.parent.parent.cnf.map.team.auto.map)
+                end
             else
-                setautoteam(self.parent.parent.cnf.map.team.auto.map)
+                setautoteam(false)
             end
+
             self.parent.parent.log:w("Map postset autoteam is "..tostring(getautoteam()))
         end,
         say = function (self,name,mode)
             if self.parent.parent.cnf.map.say.load_map then
                 self.parent.parent.log:w('Changed map '..name)
-                local gema, autoteam  = '', '\f9Autoteam is '
+                local gema, autoteam  = '', ''
                 if self:is_gema_map() then 
 --                    if self.parent.cnf.map.team.auto.gema then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
                     if self.parent.parent.cnf.map.say.load_map then gema = "\fX!!! GEMA !!!" end
                 end
-                if getautoteam() then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
+                if self:is_gema_map() then
+                    self.parent.parent.say:sys(cn, self.parent.parent.cnf.cn.motd_str.change_map_gema..'GEMA')
+                else
+                    self.parent.parent.say:sys(cn, self.parent.parent.cnf.cn.motd_str.change_map..'MAP')
+                end
+                if self.parent.parent.cnf.map.say.autoteam then
+                    if getautoteam() then
+                        autoteam = '\f9Autoteam is '..autoteam..'\f0ENABLED'
+                    else
+                        autoteam = '\f9Autoteam is '..autoteam..'\f3DISABLED'
+                    end
+                end
                 self.parent.parent.say:sall(-1, string.format("\fPInstalled \f9%s \fPPlayground, \f9%s \fPmode. \f3%s %s",self.name,self.mode_str,gema,autoteam))
             end
         end,

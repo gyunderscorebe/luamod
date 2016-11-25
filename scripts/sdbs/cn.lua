@@ -104,6 +104,18 @@ return {
         end
         return false
     end,
+    get_name = function(self,cn)
+        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
+            return self.data[self.data_cn[cn]].name
+        end
+        return nil
+    end,
+    get_rndcolor_name = function(self,cn)
+        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
+            return self.parent.fn:random_color()..self.data[self.data_cn[cn]].name
+        end
+        return nil
+    end,
     add_cn = function(self,cn)
         self.parent.log:i('AddCn...',cn)
         if self.data_cn[cn] == nil then
@@ -127,6 +139,8 @@ return {
                 disconnect_reason = false
             })
 
+
+            if self.parent.cnf.say.wrapp.randomcolor then name = self.parent.fn:random_color()..name end
 
             self.data_cn[cn] = #self.data
             self.data[self.data_cn[cn]].dcn = self.data_cn[cn]
@@ -161,9 +175,9 @@ return {
                             --if self.parent.cnf.geo.activate and self.parent.cnf.geo.city and self.parent.cnf.geo.say_city then
                             --        geo = string.format('%s\f9%s ',geo,self.data[self.data_cn[cn]].city)
                             --end
-                            self.parent.say:sto(cn,v.cn,string.format("\f3%s \f0player went to the playground \f3!!! %s \f4IP: %s",self.data[self.data_cn[cn]].name,self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].ip),nil,nil,SAY_WARN)
+                            self.parent.say:sto(cn,v.cn,string.format("\f9%s \f0player went to the playground \f3!!! %s \f4IP: %s",name,self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].ip),nil,nil,SAY_WARN)
                         else
-                            self.parent.say:sto(cn,v.cn,string.format("\f3%s \f0player went to the playground \f3!!! %s",self.data[self.data_cn[cn]].name,self.data[self.data_cn[cn]].geo,(self.data[self.data_cn[cn]].iso or '')),nil,nil,SAY_WARN)
+                            self.parent.say:sto(cn,v.cn,string.format("\f9%s \f0player went to the playground \f3!!! %s",name,self.data[self.data_cn[cn]].geo,(self.data[self.data_cn[cn]].iso or '')),nil,nil,SAY_WARN)
                         end
                     end
                 end
@@ -178,10 +192,13 @@ return {
                     --if self.parent.cnf.map.team.auto.map then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
                     if getautoteam() then autoteam = autoteam..'ENABLED' else autoteam = autoteam..'DISABLED' end
                 end
-                self.parent.say:sme(cn, string.format("\f0%s \f3!!! \f2We are glad to see you on our server. You are %s \f0map. %s \f3Attention %s \f0%s \f2Game Mode",self.data[self.data_cn[cn]].name,self.parent.gm.map.name,autoteam,gema ,self.parent.gm.map.mode_str))
+                self.parent.say:sys(cn,'\n')
+                self.parent.say:sys(cn, self.parent.cnf.cn.motd_str.connect)
+                self.parent.say:sys(cn,'\n')
+                self.parent.say:sme(cn, string.format("\f9%s \f3!!! \f2We are glad to see you on our server. You are %s \f0map. %s \f3Attention %s \f0%s \f2Game Mode%s",name,self.parent.gm.map.name,autoteam,gema ,self.parent.gm.map.mode_str,self.parent.cnf.cn.motd_str.fix))
             end
             self.parent.log:i('AddCn OK',cn)
-            --self:get_chk_data_cn()
+            --if self.parent.C_LOG then self:get_chk_data_cn() end
             return true
         else 
             self.parent.log:i('Not is CN for add data cn. AddCn NO',cn)
@@ -227,14 +244,14 @@ return {
         else
             self.parent.log:i('Connect NO',cn)
         end
-        self:get_chk_data_cn()
+        if self.parent.C_LOG then self:get_chk_data_cn() end
     end,
     force_disconnect = function(self,cn,reasson,message)
         if self.d_force.cn == nil then
             self.d_force = {
                 cn = cn,
-                reasson = reasson,
-                message = message or ''
+                reasson = reasson
+                --message = message or ''
             }
         end
         callhandler('onPlayerDisconnect',cn,reasson)
@@ -255,7 +272,9 @@ return {
                 else
                     name = getname(cn) or 'NOT_NAME'
                 end
-                self.parent.say:sallexme(cn,string.format("\f3%s \f1player leaves the playing field !!! Reason for leaving: \f3%s. \f1%s",name,self:get_d_reasson(reasson) or "DISCONNECT", self.d_force.message or '')) 
+            if self.d_force.message == nil then self.d_force.message = " !" end
+                if self.parent.cnf.say.wrapp.randomcolor then name = self.parent.fn:random_color()..name end
+                self.parent.say:sall(-1,string.format("%s \f1player leaves the playing field !!! Reason for leaving: \f3%s. \f1%s",name,self:get_d_reasson(reasson) or "DISCONNECT", self.d_force.message)) 
             end
             if self.d_force.cn ~= nil then
                 self.d_force.cn = nil
@@ -267,7 +286,7 @@ return {
         else
             self.parent.log:i('Disconnect NO',cn)
         end
-        self:get_chk_data_cn()
+        if self.parent.C_LOG then self:get_chk_data_cn() end
         return
         -- PLUGIN_BLOCK
     end,
@@ -275,13 +294,30 @@ return {
         self.parent.log:i('Preconnect',cn)
         local name = getname(cn)
         local ip = getip(cn)
+        name = name:lower()       
+        if self.parent.cnf.cn.active_chkeck_ban_name then
+            for _,v in ipairs(self.parent.cnf.cn.chkeck_ban_name_list) do
+               if name:find(v) then
+                    self.parent.log:w(string.format("Find name: %s in name ban list players = true",name),cn)
+                        --self:force_disconnect(cn,self:get_d_reasson('BADNICK'),' This name is already used by a player, present here. It is prohibited by the rules.')
+                        self.d_force = {
+                        cn = cn,
+                        reasson = self:get_d_reasson('BADNICK'),
+                    }
+                    if self.parent.cnf.cn.say_active_chkeck_ban_name then
+                        self.d_force.message = ' Name contains a forbidden word on this playground. It is prohibited by the rules.'
+                    end
+                    return true
+                end
+            end
+        end
         if isconnected(cn) and #self.data > 0 and ( self.parent.cnf.cn.not_connect_same_name or self.parent.cnf.cn.not_login_old_same_name ) then
             --self.parent.log:w("Name search ")
             for k,v in ipairs(self.data) do
                 if cn ~= v.cn and k == v.dcn then
                     if self.parent.cnf.cn.not_connect_same_name then
                         --self.parent.log:w("Name search ".. v.name)
-                        if v.name:lower() == name:lower() then
+                        if v.name:lower() == name then
                             self.parent.log:w(string.format("Find name: %s in name list players = true",name),cn)
                             
                             --self:force_disconnect(cn,self:get_d_reasson('BADNICK'),' This name is already used by a player, present here. It is prohibited by the rules.')
@@ -297,7 +333,7 @@ return {
                         if #v.oldname > 0 then 
                             for _,vv in ipairs(v.oldname) do
                                 -- self.parent.log:w("Oldname search "..vv..' name '..v.name,cn)
-                                if vv:lower() == name:lower() then
+                                if vv:lower() == name then
                                     self.parent.log:w(string.format("Find name: %s in old name list players = true",name),cn)
                                     --self:force_disconnect(cn,self:get_d_reasson('BADNICK'),' This name is already used by players who are here. It is prohibited by the rules.')
                                     
@@ -338,6 +374,25 @@ return {
                 self:force_disconnect(self.d_force.cn,self.d_force.reasson)
                 return
                 -- PLUGIN_BLOCK
+            end
+            if self.parent.cnf.cn.active_chkeck_ban_name then
+                self.parent.log:i('Check list ban name. KICK OK',cn)
+                local lnewname = newname:lower()
+                for _,v in ipairs(self.parent.cnf.cn.chkeck_ban_name_list) do
+                   if lnewname:find(v) then
+                        self.parent.log:w(string.format("Find name: %s in name list players = true",name),cn)
+                            --self:force_disconnect(cn,self:get_d_reasson('BADNICK'),' This name is already used by a player, present here. It is prohibited by the rules.')
+                            self.d_force = {
+                            cn = cn,
+                            reasson = self:get_d_reasson('BADNICK'),
+                        }
+                        if self.parent.cnf.cn.say_active_chkeck_ban_name then
+                            self.d_force.message = ' Name contains a forbidden word on this playground. It is prohibited by the rules.'
+                        end
+                        self:force_disconnect(self.d_force.cn,self.d_force.reasson)
+                        return true
+                    end
+                end
             end
             if self.parent.cnf.cn.not_allow_same_name or self.parent.cnf.cn.not_allow_old_same_name then
                 for k,v in ipairs(self.data) do
@@ -449,7 +504,9 @@ return {
             return true
         end
         --if self.parent.cnf.say.colorize_text_cmd then text = self.parent.fn:colorize_text(text) end
-        self.parent.say:allexme(cn,self.parent.say:colorize(text))
+        if self.parent.cnf.say.colorize_text_cmd then text = self.parent.say:colorize(text) end
+        --self.parent.say:allexme(cn,text)
+        self.parent.say:all(cn,text)
         --self.parent.say:sme(cn,text)
         return true
     end,

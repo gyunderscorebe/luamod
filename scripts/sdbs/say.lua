@@ -8,10 +8,11 @@ return {
     end,
     wname = function(self,cn,name,sys)
         if not sys then
+            local delemiter = self.wrapp.delimiter
             if self.wrapp.active then
-                return (self.parent.fn:str_replace(self.wrapp.format,{ ['<CN>'] = cn ,['<NAME>'] = name }))..' :'
+                return (self.parent.fn:str_replace(self.wrapp.format,{ ['<CN>'] = cn ,['<NAME>'] = name }))..delemiter
             end
-            return name..' :'
+            return name..delemiter
         end
         return ''
     end,
@@ -66,7 +67,7 @@ return {
     end,
     sall = function(self,cn,text,cflag,nflag,tflag)
         for _,v in ipairs(self.parent.cn.data) do
-            if excn ~= v.cn then 
+            if cn ~= v.cn then 
                 self:out(text,v.cn,v.cn,nil,cflag,nflag,tflag,true,false)
             end
         end
@@ -93,6 +94,12 @@ return {
             local txt = sdbs.parent.str_replace(line,{[','] = ''})
             self:all(cn,txt,_,_,_,sys,pm)
         end
+    end,
+    sys = function (self,cn,text)
+        clientprint(cn,text)
+    end,
+    sysall = function (self,cn,text)
+        clientprint(-1,text)
     end,
 
     init = function(self,obj)
