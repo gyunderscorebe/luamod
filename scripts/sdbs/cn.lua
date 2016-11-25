@@ -168,7 +168,18 @@ return {
                     end
                 end
             end
-            if self.parent.cnf.cn.say_connect_me then self.parent.say:sme(cn, string.format("\f1%s \f3!!! \f0We are glad to see you on our server. You are \f3%s \f0map. \f3%s \f0Game Mode",self.data[self.data_cn[cn]].name,self.parent.gm.map.name,self.parent.gm.map.mode_str)) end
+            if self.parent.cnf.cn.say_connect_me then
+                local gema, autoteam  = '', '\fPAutoteam is '
+                if self.parent.cnf.map.say.load_map then
+                    if self.parent.gm.map:is_gema_map() then 
+                        --if self.parent.cnf.map.team.auto.gema then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
+                        if self.parent.cnf.map.say.load_map then gema = "\fX!!! GEMA !!!" end
+                    end
+                    --if self.parent.cnf.map.team.auto.map then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
+                    if getautoteam() then autoteam = autoteam..'ENABLED' else autoteam = autoteam..'DISABLED' end
+                end
+                self.parent.say:sme(cn, string.format("\f0%s \f3!!! \f2We are glad to see you on our server. You are %s \f0map. %s \f3Attention %s \f0%s \f2Game Mode",self.data[self.data_cn[cn]].name,self.parent.gm.map.name,autoteam,gema ,self.parent.gm.map.mode_str))
+            end
             self.parent.log:i('AddCn OK',cn)
             --self:get_chk_data_cn()
             return true
@@ -274,16 +285,15 @@ return {
                             self.parent.log:w(string.format("Find name: %s in name list players = true",name),cn)
                             
                             --self:force_disconnect(cn,self:get_d_reasson('BADNICK'),' This name is already used by a player, present here. It is prohibited by the rules.')
-                            
                             self.d_force = {
                                 cn = cn,
                                 reasson = self:get_d_reasson('BADNICK'),
                                 message = ' This name is already used by a player, present here. It is prohibited by the rules.'
                             }
-                            return
+                            return true
                         end
                     end
-                    if self.parent.cnf.cn.not_login_old_same_name then
+                    if self.parent.cnf.cn.not_connect_old_same_name then
                         if #v.oldname > 0 then 
                             for _,vv in ipairs(v.oldname) do
                                 -- self.parent.log:w("Oldname search "..vv..' name '..v.name,cn)
@@ -296,7 +306,7 @@ return {
                                         reasson = self:get_d_reasson('BADNICK'),
                                         message = ' This name is already used by players who are here. It is prohibited by the rules.'
                                     }
-                                    return
+                                    return true
                                 end
                             end
                         end
@@ -308,7 +318,7 @@ return {
                 end
             end
         end
-        return
+        return false
         -- PLUGIN_BLOCK
     end,
     rename = function(self,cn,newname)
@@ -431,6 +441,7 @@ return {
                 cmd:cfn(cn, args)
                 if not cmd.protected[4] then return true end
             else
+                self.parent.say:sme(cn,'You do not have rights to view.',_,_,_SAY_WARN)
                 return true
             end
         elseif string.byte(command,1) == string.byte("$",1) then

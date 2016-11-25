@@ -10,7 +10,8 @@ return {
         ["<>"] = {
             protected = { true, true, true, false },
             cfn = function (self,cn, args)
-            end
+            end,
+            help = ''
         },
 ]]
 
@@ -19,7 +20,7 @@ return {
         ["$pm"] = {
             protected = { true, true, true, false },
             cfn = function (self,cn, args)
-                self.parent.log:i(" viewed $pm",cn)
+                self.parent.log:i("used $pm",cn)
                 if (#args < 2) then
                     if args[1] == '-h' then self.parent.say:me(cn,self.help) end
                     return
@@ -32,25 +33,40 @@ return {
             end,
             help = "\f9Privat message. \f2Format: \f0$pm <CN> <TEXT>"
         },
-        ["$f1"] = {
+        ["$1"] = {
             protected = { true, true, true, false },
             cfn = function (self,cn, args)
-                if args[1] == '-h' then self.parent.say:me(cn,self.help) end
-                self.parent.log:i(" viewed $f1",cn)
+                self.parent.log:i(" viewed $1",cn)
+                if args[1] == '-h' then self.parent.say:me(cn,self.help) return true end
                 self.parent.say:allexme(cn, self.parent.fn:colorize_text("!!!!!!!!! F1 PLLEEEAAAASSSSSEEEEEE !!!!!!!!!!!!!"))
             end,
-            help = '\f1Joke \f2:) \fPFormat: \f0$f1'
+            help = '\f1Joke. \f0$1 - > \3F1 \f2:) \fPFormat: \f0$1'
         },
         ["$time"] = {
             protected = { true, true, true, false },
             cfn = function (self,cn, args)
-                if args[1] == '-h' then self.parent.say:me(cn,self.help) end
                 self.parent.log:i("used $time",cn)
+                if args[1] == '-h' then self.parent.say:me(cn,self.help) return true end
                 self.parent.say:sme(cn,"\f0D\f2ate is \f0"  .. os.date("%c"))
             end,
             help = '\f1System time of server \f2:) \fP\f4Format: \f0$time'
+        },
+
+        
+        -- ADMIN COMMANDS
+
+        ["$restart"] = {
+            protected = { true, false, false, false },
+            cfn = function (self,cn, args)
+                self.parent.log:i("used $reload",cn)
+                if args[1] == '-h' then self.parent.say:me(cn,self.help) return true end
+                if args[1] == 'mod' then callhandler('onPlayerSayText',cn,'serverextention lua::reload',team,me) return true end
+            end,
+            help = '\f9Restart LuaMod '..PLUGIN_NAME..' Format: $restart mod'
         }
     },
+
+
     init = function(self,obj)
         self.parent = obj
         self.commands['$help'] = {
@@ -60,16 +76,20 @@ return {
             protected = { true, true, true, false },
             cfn = function (self,cn, args)
                 if #args < 1 then
-                    self.parent.say:sme(cn,'\2There are subsections: \f9AVAIABLE \f1| \f9PROTECTED \f1| \f9ADMIN \f2Please enter \f9$help <sub>')
-                    return true
+                    self.parent.say:sme(cn,'\2There are subsections: \f9AVAIABLE \f1| \f9PROTECTED \f1| \f9ADMIN \f2Please enter \f9$help <sub> or $help 0[n]')
+                    return
                 end
                 if #args < 2 then
-                    if args[1] == 'AVAIABLE' then self.parent.say:sme(cn,self.AVAIABLE) return true end
-                    if args[1] == 'PROTECTED' and (self.parent.cn:chk_admin(cn) or self.parent.cn:chk_referee(cn))  then self.parent.say:sme(cn,self.PROTECTED)
-                        return true
-                    else self.parent.say:sme(cn,'You do not have rights to view.',_,_,_SAY_WARN) return true  end
-                    if args[1] == 'ADMIN' and self.parent.cn:chk_admin(cn) then self.parent.say:sme(cn,self.ADMIN) return true else self.parent.say:sme(cn,'You do not have rights to view.',_,_,_SAY_WARN) return true end
-                end
+                    if args[1] == 'AVAIABLE' or args[1] == '0' then
+                        self.parent.say:sme(cn,self.AVAIABLE) 
+                    elseif args[1] == 'PROTECTED' or args[1] == '1' and ( self.parent.cn:chk_admin(cn) or self.parent.cn:chk_referee(cn) ) then
+                        self.parent.say:sme(cn,self.PROTECTED)
+                    elseif args[1] == 'ADMIN' or args[1] == '2' and self.parent.cn:chk_admin(cn) then
+                        self.parent.say:sme(cn,self.ADMIN)
+                    else 
+                        self.parent.say:sme(cn,'You do not have rights to view.',_,_,_SAY_WARN)
+                    end
+                end                
             end
         }
 

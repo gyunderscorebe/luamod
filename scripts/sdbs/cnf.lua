@@ -14,7 +14,7 @@ return {
         },
         -- обертка имени игрока. типа >>>-{<NAME>}-> (0)
         wrapp = {
-            active = true,
+            active = false,
             randomcolor = true,
             color = SAY_INFO,
             format = ">>>~<NAME>~>(<CN>)",
@@ -22,7 +22,7 @@ return {
         text = {
             color = SAY_TEXT
         },
-        -- включить использование цветовых символов в cmd сомандах
+        -- включить использование цветовых символов в выводе текста cmd комманд
         colorize_text_cmd = true
     },
     geo = {
@@ -41,7 +41,7 @@ return {
     },
     map = {
         list = {
-            implicit = { "vah", "blue" },
+            implicit = { "vah", "blue", 'gema' },
             code = { "g", "3e","m", "a@4" }
         },
         -- Автораспределение игроков на картах
@@ -80,7 +80,7 @@ return {
         -- запретить вход с одинаковыми именами
         not_connect_same_name = true,
         -- запретить вход с именем, если действующий игрок уже его использовал в игре
-        not_login_old_same_name = false,
+        not_connect_old_same_name = false,
         -- сказать что кто то стал админом
         say_admin_role_change = true,
         -- запретить смену имени админу, перед и после смен ролей на админа и ли не админа или пока админ

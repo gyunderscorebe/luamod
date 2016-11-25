@@ -121,8 +121,32 @@ return {
             self.name = name or getmapname()
             self.mode = mode or getgamemode()
             self.mode_str = self.parent.mode:get(self.mode)
-            self.mode_gema = self:chk_gema_map(name)
-        end
+            self.mode_gema = self:chk_gema_map(self.name)
+        end,
+        set_auto_team = function(self,name,mode)
+            self.parent.parent.log:w("Map name  "..self.name )
+            self.parent.parent.log:w("Map mode  "..self.mode_str)
+            self.parent.parent.log:w("Map is gema "..tostring(self.mode_gema))
+            self.parent.parent.log:w("Map preset autoteam is "..tostring(getautoteam()))
+            if  self:is_gema_map()  then
+                setautoteam(self.parent.parent.cnf.map.team.auto.gema)
+            else
+                setautoteam(self.parent.parent.cnf.map.team.auto.map)
+            end
+            self.parent.parent.log:w("Map postset autoteam is "..tostring(getautoteam()))
+        end,
+        say = function (self,name,mode)
+            if self.parent.parent.cnf.map.say.load_map then
+                self.parent.parent.log:w('Changed map '..name)
+                local gema, autoteam  = '', '\f9Autoteam is '
+                if self:is_gema_map() then 
+--                    if self.parent.cnf.map.team.auto.gema then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
+                    if self.parent.parent.cnf.map.say.load_map then gema = "\fX!!! GEMA !!!" end
+                end
+                if getautoteam() then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
+                self.parent.parent.say:sall(-1, string.format("\fPInstalled \f9%s \fPPlayground, \f9%s \fPmode. \f3%s %s",self.name,self.mode_str,gema,autoteam))
+            end
+        end,
     },
     -- VOTE
     vote = {

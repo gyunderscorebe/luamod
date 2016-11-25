@@ -2,13 +2,15 @@
 
 --(int actor_cn)
 function onPlayerPreconnect (cn)
-    sdbs.cn:preconnect(cn)
-    --return PLUGIN_BLOCK
+    if sdbs.cn:preconnect(cn) then
+        return PLUGIN_BLOCK
+    end
 end
 --(int actor_cn)
 function onPlayerConnect(cn) 
-    sdbs.cn:connect(cn)
-    --return PLUGIN_BLOCK
+    if sdbs.cn:connect(cn) then
+        return PLUGIN_BLOCK
+    end
 end
 --(int actor_cn, int reason)
 function onPlayerDisconnect(cn,reasson)
@@ -18,8 +20,9 @@ end
 --(int actor_cn, string new_name)
 -- Смена имени игроком
 function onPlayerNameChange(cn, newname)
-   sdbs.cn:rename(cn,newname)
-   return PLUGIN_BLOCK
+    if sdbs.cn:rename(cn,newname) then
+        return PLUGIN_BLOCK
+    end
 end
 function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
 
@@ -65,6 +68,8 @@ end
 -- Активация карты
 function onMapChange(name, mode)
     sdbs.gm.map:set_info(name, mode)
+    sdbs.gm.map:set_auto_team(name, mode)
+    sdbs.gm.map:say(name, mode)
 end
 
 sdbs.log:i('Require module handlers is OK')

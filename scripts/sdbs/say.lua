@@ -16,7 +16,7 @@ return {
         return ''
     end,
     out = function(self,text,cn,tcn,excn,cflag,nflag,tflag,sys,pm)
-    if self.parent.cn.data_cn[cn] == nil then return end
+        if self.parent.cn.data_cn[cn] == nil then return end
         local name, tcn, cflag, nflag, tflag,sys = self.parent.cn.data[self.parent.cn.data_cn[cn]].name or self.cursor.def_name, tcn, (cflag or self.cursor.color), (nflag or self.wrapp.color),(tflag or self.text.color), sys or false, pm or false
         local server, domain = self.parent.gm.map.mode_str or self.cursor.def_server, self.cursor.def_domain
         if self.cursor.randomcolor then cflag = self.parent.fn:random_color() end
@@ -36,7 +36,9 @@ return {
             clientprint(tcn,string.format('%s%s%s%s %s%s%s',cflag,self:wcursor(tcn,self.parent.cn.data[self.parent.cn.data_cn[tcn]].name,server,domain),nflag,self:wname(cn,name,sys),pm,tflag,text))
         elseif tcn == -1 then
             for _,v in ipairs(self.parent.cn.data) do
-                if excn ~= v.cn then clientprint(v.cn,string.format('%s%s%s%s %s%s',cflag,self:wcursor(cn,v.name,server,domain),nflag,self:wname(cn,name,sys),tflag,text)) end
+                if excn ~= v.cn then 
+                    clientprint(v.cn,string.format('%s%s%s%s %s%s',cflag,self:wcursor(cn,v.name,server,domain),nflag,self:wname(cn,name,sys),tflag,text)) 
+                end
             end
         end
     end,
@@ -63,7 +65,12 @@ return {
         self:out(text,cn,cn,nil,cflag,nflag,tflag,false,false)
     end,
     sall = function(self,cn,text,cflag,nflag,tflag)
-        self:out(text,cn,-1,nil,cflag,nflag,tflag,true,false)
+        for _,v in ipairs(self.parent.cn.data) do
+            if excn ~= v.cn then 
+                self:out(text,v.cn,v.cn,nil,cflag,nflag,tflag,true,false)
+            end
+        end
+        --self:out(text,cn,-1,nil,cflag,nflag,tflag,true,false)
     end,    
     sallex = function(self,cn,tcn,text,cflag,nflag,tflag)
         self:out(text,cn,-1,tcn,cflag,nflag,tflag,true,false)

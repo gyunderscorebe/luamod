@@ -40,7 +40,12 @@ end
 
 require('handlers')
 function onInit()
+    setautoteam(false)
     sdbs.C_LOG = sdbs.cnf.c_log
-    sdbs.gm.map:set_info(getmapname(), getgamemode())
-    return PLUGIN_BLOCK
+    sdbs.log:w("Map autoteam is  "..tostring(getautoteam()))
+    sdbs.log:w("Init mod "..PLUGIN_NAME..' is  OK')
+end
+
+function onDestroy()
+    sdbs.log:w("Destroy mod "..PLUGIN_NAME..' is  OK')
 end
