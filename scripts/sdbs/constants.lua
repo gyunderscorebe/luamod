@@ -9,7 +9,7 @@ LOG_ERR = 4
 SAY_TEXT = '\f2'
 SAY_PRIVATE = '\f7(\f3PM\f7) '
 SAY_NORMAL = '\f0'
-SAY_INFO = '\fP'
+SAY_INFO = '\f9\fB'
 SAY_WARN = '\f9'
 SAY_ERR = '\f3'
 SAY_SYS = '\f5'
@@ -20,9 +20,9 @@ SAY_MAGENTA = '\fX'
 
 -- color
 
-C_CODES = { "\f0", "\f1", "\f2", "\f3", "\f4", "\f5", "\f6", "\f7", "\f8", "\f9", "\fA", "\fB", "\fC", "\fD", "\fE", "\fF", "\fG", "\fH", "\fI", "\fJ", "\fK", "\fL", "\fM", "\fN", "\fO", "\fP", "\fQ", "\fR", "\fS", "\fT", "\fU", "\fV", "\fW", "\fX", "\fY", "\fZ", "\fb"}
-CC_LOOKUP = { "\\f0", "\\f1", "\\f2", "\\f0", "\\f2", "\\f5", "\\f6", "\\f7", "\\f8", "\\f9", "\\fA", "\\fB", "\\fC", "\\fD", "\\fE",
+C_CODES = { "\f0", "\f1", "\f2", "\f3", "\f4", "\f5", "\f6", "\f7", "\f8", "\f9", "\fA", "\fB", "\fC", "\fD", "\fE", "\fF", "\fG", "\fH", "\fI", "\fJ", "\fK", "\fL", "\fM", "\fN", "\fO", "\fP", "\fQ", "\fR", "\fS", "\fT", "\fU", "\fV", "\fW", "\fX", "\fY", "\fZ", "\fB"}
+CC_LOOKUP = { "\\f0", "\\f1", "\\f2", "\\f3", "\\f4", "\\f5", "\\f6", "\\f7", "\\f8", "\\f9", "\\fA", "\\fB", "\\fC", "\\fD", "\\fE",
   "\\fF", "\\fG", "\\fH", "\\fI", "\\fJ", "\\fK", "\\fL", "\\fM", "\\fN", "\\fO", "\\fP", "\\fQ", "\\fR", "\\fS", "\\fT",
-  "\\fU", "\\fV", "\\fW", "\\fX", "\\fY", "\\fZ", "\\fb"}
+  "\\fU", "\\fV", "\\fW", "\\fX", "\\fY", "\\fZ", "\\fB"}
 
 logline(LOG_INFO,'SDBS: Player SYSTEM says: Module function constants is OK')

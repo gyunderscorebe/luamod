@@ -8,20 +8,22 @@ return {
             def_server = "frends",
             def_domain = "vah-clan.ga",
             active = true,
-            randomcolor = false,
-            color = SAY_DARKGRAY,
+            randomcolor = true,
+            color = SAY_GRAY,
             format = "[<NAME>@<SERVER>.<DOMAIN>]$"
         },
         -- обертка имени игрока. типа >>>-{<NAME>}-> (0)
         wrapp = {
             active = true,
-            randomcolor = false,
+            randomcolor = true,
             color = SAY_INFO,
             format = ">>>~<NAME>~>(<CN>)",
         },
         text = {
             color = SAY_TEXT
-        }
+        },
+        -- включить использование цветовых символов в cmd сомандах
+        colorize_text_cmd = true
     },
     geo = {
         -- активировать загрузку баз
@@ -59,11 +61,11 @@ return {
     flag = {
         reset = {
             -- флаг возращается на место при сбросе флага игроком
-            drop = false,
+            drop = true,
             -- сказать об этом
             say_drop = true,
             -- флаг возращается на место при гибели игрока
-            lost = true,
+            lost = false,
             -- сказать об этом
             say_lost = true
         }

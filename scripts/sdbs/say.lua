@@ -35,10 +35,14 @@ return {
             end
             clientprint(tcn,string.format('%s%s%s%s %s%s%s',cflag,self:wcursor(tcn,self.parent.cn.data[self.parent.cn.data_cn[tcn]].name,server,domain),nflag,self:wname(cn,name,sys),pm,tflag,text))
         elseif tcn == -1 then
-            for i = 0, maxclient() -1 do
-                if excn ~= i and self.parent.cn.data_cn[i] ~= nil then clientprint(i,string.format('%s%s%s%s %s%s',cflag,self:wcursor(cn,self.parent.cn.data[self.parent.cn.data_cn[i]].name,server,domain),nflag,self:wname(cn,name,sys),tflag,text)) end
+            for _,v in ipairs(self.parent.cn.data) do
+                if excn ~= v.cn then clientprint(v.cn,string.format('%s%s%s%s %s%s',cflag,self:wcursor(cn,v.name,server,domain),nflag,self:wname(cn,name,sys),tflag,text)) end
             end
         end
+    end,
+    colorize = function(self,text)
+        if self.parent.cnf.say.colorize_text_cmd then text = string.gsub(text,"\\f","\f") end
+        return text
     end,
     all = function(self,cn,text,cflag,nflag,tflag)
         self:out(text,cn,-1,nil,cflag,nflag,tflag,false,false)

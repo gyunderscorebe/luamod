@@ -76,6 +76,15 @@ return {
       return tonumber(str) -- преобразуем обратно в число и возвращаем
     end,
 
+    shuffle =function (self, t)
+        local n,nf = #t, #t --___ME__ fixed this function so it doesn't always start with the same map every time you reload the server, I just like my random to be random
+        while n > 0 do
+            local k = math.random(nf)
+            t[n], t[k] = t[k], t[n]
+            n = n - 1
+        end
+        return t
+    end,
     -- проверка, что переменная это число, строка или булевский тип)
     is_valid_type = function (self,value_type)
         return "number" == value_type or 

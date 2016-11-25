@@ -88,9 +88,21 @@ return {
     end,
     get_admin = function()
         for _,v in ipairs(self.data) do
-            if v.role == self.get_role('ADMIN') and isadmin(v.cn) then return v.cn end
+            if v.role == self:get_role('ADMIN') and isadmin(v.cn) then return v.cn end
         end
         return -1
+    end,
+    chk_admin = function(self,cn)
+        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
+            if self.data[self.data_cn[cn]].role == self:get_role('ADMIN') then return true end
+        end
+        return false
+    end,
+    chk_referee = function(self,cn)
+        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
+            if self.data[self.data_cn[cn]].referee == self:get_role('REFEREE') then return true end
+        end
+        return false
     end,
     add_cn = function(self,cn)
         self.parent.log:i('AddCn...',cn)
@@ -412,24 +424,21 @@ return {
         local data = self.parent.fn:split(text, " ")
         local command, args = data[1], self.parent.fn:slice(data, 2)
         local admin, referee,name = false, false, ''
-        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
-            admin = self.data[self.data_cn[cn]].role
-            referee =self.data[self.data_cn[cn]].referee
-            name =self.data[self.data_cn[cn]].name
-        else return true end
+        if self.data_cn[cn] == nil then  return true end
         if self.parent.cmd.commands[command] ~= nil then
             local cmd = self.parent.cmd.commands[command]
-            if ( admin == self:get_role("ADMIN") and cmd.protected[1]) or ( referee == self:get_role("ADMIN") and cmd.protected[2] ) or cmd.protected[3] then
-                cmd:cfn(cn, args,name)
+            if ( self:chk_admin(cn) and cmd.protected[1]) or ( self:chk_referee(cn) and cmd.protected[2] ) or cmd.protected[3] then
+                cmd:cfn(cn, args)
                 if not cmd.protected[4] then return true end
             else
                 return true
             end
         elseif string.byte(command,1) == string.byte("$",1) then
-            self.parent.say:sme(cn,'\f2This team does not have, type \f5$list cmd \f2to list.')
+            self.parent.say:sme(cn,'\f2Invalid command call, Dial the \f3'..command..' -h \f2for reference. Or type \f3$HELP \f2to view a list of commands available to you.')
             return true
         end
-        self.parent.say:allexme(cn,text)
+        --if self.parent.cnf.say.colorize_text_cmd then text = self.parent.fn:colorize_text(text) end
+        self.parent.say:allexme(cn,self.parent.say:colorize(text))
         --self.parent.say:sme(cn,text)
         return true
     end,
