@@ -25,7 +25,6 @@ function onPlayerNameChange(cn, newname)
     end
 end
 function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
-
     if sdbs.cn:role_change(cn, new_role, hash, pwd, isconnect) then
         return PLUGIN_BLOCK
     end
@@ -48,6 +47,7 @@ function onPlayerSayVoice(cn, sound)
 end
 -- (int sender_cn, string text, bool team, bool me)
 function onPlayerSayText(cn,text,team,me)
+
     --sdbs.say:sme(cn,text)
     --sdbs.say:to(cn,math.abs(cn -1),'to player cn = '..(tostring(math.abs(cn -1))))
     --sdbs.say:pm(cn,math.abs(cn -1),'PM player cn = '..(tostring(math.abs(cn -1))))

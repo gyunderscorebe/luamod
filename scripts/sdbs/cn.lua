@@ -86,32 +86,34 @@ return {
             end
         end
     end,
-    get_admin = function()
+    get_admin = function(self)
         for _,v in ipairs(self.data) do
-            if v.role == self:get_role('ADMIN') and isadmin(v.cn) then return v.cn end
+            if self:chk_admin(v.cn) then return v.cn end
         end
-        return -1
+        return nil
     end,
     chk_admin = function(self,cn)
-        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
-            if self.data[self.data_cn[cn]].role == self:get_role('ADMIN') then return true end
-        end
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].role == self:get_role('ADMIN') and isadmin(cn) then return true end
         return false
     end,
     chk_referee = function(self,cn)
-        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
-            if self.data[self.data_cn[cn]].referee == self:get_role('REFEREE') then return true end
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].referee == self:get_role('REFEREE') then return true end
+        return false
+    end,
+    chk_cn = function(self,cn)
+        if isconnected(cn) and self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil and self.data[self.data_cn[cn]].cn == cn then
+            return true
         end
         return false
     end,
     get_name = function(self,cn)
-        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
+        if self:chk_cn(cn) then
             return self.data[self.data_cn[cn]].name
         end
         return nil
     end,
     get_rndcolor_name = function(self,cn)
-        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil then
+        if self:chk_cn(cn) then
             return self.parent.fn:random_color()..self.data[self.data_cn[cn]].name
         end
         return nil
@@ -207,7 +209,7 @@ return {
     end,
     remove_cn = function(self,cn,reasson)
         self.parent.log:i('RemoveCn....',cn)
-        if self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil and self.data[self.data_cn[cn]].cn == cn and self.data[self.data_cn[cn]].dcn == self.data_cn[cn] then
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].cn == cn and self.data[self.data_cn[cn]].dcn == self.data_cn[cn] then
             for k,v in ipairs(self.data) do
                 if cn == v.cn then
                     table.remove(self.data,k)
@@ -359,7 +361,7 @@ return {
     end,
     rename = function(self,cn,newname)
         self.parent.log:i('Rename...',cn)
-        if isconnected(cn) and self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil and self.data[self.data_cn[cn]].cn == cn and self.data[self.data_cn[cn]].dcn == self.data_cn[cn] then
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].dcn == self.data_cn[cn] then
             local dcn = self.data_cn[cn]
             self.parent.log:i('Check rename...',cn)
             if self.parent.cnf.cn.not_rename then
@@ -453,8 +455,7 @@ return {
         return
     end,
     role_change = function(self,cn, new_role, hash, pwd, isconnect)
-        setrole(cn, CR_DEFAULT)
-        if isconnected and self.data_cn[cn] ~= nil and self.data[self.data_cn[cn]] ~= nil and self.data[self.data_cn[cn]].cn == cn and self.data[self.data_cn[cn]].dcn == self.data_cn[cn] then
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].dcn == self.data_cn[cn] then
             local name = self.data[self.data_cn[cn]].name
             if self.parent.cnf.cn.not_admin_rename and #self.data[self.data_cn[cn]].oldname ~= 0 then
                 if self.parent.cnf.cn.not_admin_rename_kick then
@@ -477,10 +478,10 @@ return {
             else
                 if new_role == self:get_role('ADMIN') then
                     self.data[self.data_cn[cn]].role = self:get_role('ADMIN')
-                    if self.parent.cnf.cn.say_admin_role_change then self.parent.say:sallexme(cn,string.format("\f3%s \f2has become the administrator of the game. \f3!!!",name)) end
+                    if self.parent.cnf.cn.say_admin_role_change then self.parent.say:sall(-1,string.format("\f3%s \f2has become the administrator of the game. \f3!!!",name)) end
                 else
                     self.data[self.data_cn[cn]].role = self:get_role('DEFAULT')
-                    if self.parent.cnf.cn.say_admin_role_change then self.parent.say:sallexme(cn,string.format("\f3%s \f2administrator has become a regular player. \f3!!!",name)) end
+                    if self.parent.cnf.cn.say_admin_role_change then self.parent.say:sall(-1,string.format("\f3%s \f2administrator has become a regular player. \f3!!!",name)) end
                 end
             end
         end
@@ -496,7 +497,7 @@ return {
                 cmd:cfn(cn, args)
                 if not cmd.protected[4] then return true end
             else
-                self.parent.say:sme(cn,'You do not have rights to view.',_,_,_SAY_WARN)
+                self.parent.say:sme(cn,'You do not have rights to view.',nil,nil,SAY_WARN)
                 return true
             end
         elseif string.byte(command,1) == string.byte("$",1) then

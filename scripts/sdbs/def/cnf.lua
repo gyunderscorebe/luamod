@@ -75,7 +75,7 @@ return {
             -- сказать об этом
             say_drop = true,
             -- флаг возращается на место при гибели игрока
-            lost = false,
+            lost = true,
             -- сказать об этом
             say_lost = true
         }
@@ -121,6 +121,13 @@ return {
         not_allow_old_same_name = false,
         -- сказать всем что игрока выкинули за переименование если правило это запрещает
         say_not_allow_old_same_name = true,
-
+        -- проверять имена на запрещенные слова при connect и rename
+        active_chkeck_ban_name = true,
+        -- сказать всем что игрока выкинули за это если правило это запрещает
+        say_active_chkeck_ban_name = true,
+        -- чек лист с запрещенными состовляющими ника )))
+        chkeck_ban_name_list = {
+            'idioto', 'unarme', 'bich', 'stef'
+        }
     }
 }
