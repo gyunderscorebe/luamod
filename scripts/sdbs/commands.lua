@@ -17,7 +17,16 @@ return {
 ]]
 
         -- AVAIABLE COMMANDS
-
+        ["$about"] = {
+            protected = { true, true, true, false },
+            cfn = function (self,cn, args)
+                self.parent.log:i("used $about",cn)
+                if args[1] == '-h' then self.parent.say:me(cn,self.help) return true end
+                self.parent.say:sme(cn, self.parent.cnf.cn.motd_str.connect)
+                self.parent.say:sme(cn, self.parent.cnf.cn.motd_str.fix)
+            end,
+            help = '\f1About. \f0$about \f2:) \fPFormat: \f0$1'
+        },
         ["$pm"] = {
             protected = { true, true, true, false },
             cfn = function (self,cn, args)
@@ -113,7 +122,7 @@ return {
             help = '\f2Delegation admin role. Format: $su <CN> <PASSWD> [<FLAG=0>], If the flag = 0 then removes the admin role delegated :) :D'
         },
 
-        -- $ fixation skip and random password display all :): D
+        -- $ fixation skip and random password display all :): D#
         ['sudo'] = {},
         ["$sudo"] = {
             protected = { true, true, true, false },
