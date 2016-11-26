@@ -492,6 +492,10 @@ return {
         local admin, referee,name = false, false, ''
         if self.data_cn[cn] == nil then  return true end
         if self.parent.cmd.commands[command] ~= nil then
+            if string.byte(command,1) ~= string.byte("$",1) then 
+                self.parent.say:sme(cn,'\f2Invalid command call, Enter the \f3$HELP \f2to view a list of commands available to you.')
+                return true
+            end
             local cmd = self.parent.cmd.commands[command]
             if ( self:chk_admin(cn) and cmd.protected[1]) or ( self:chk_referee(cn) and cmd.protected[2] ) or cmd.protected[3] then
                 cmd:cfn(cn, args)
@@ -501,7 +505,7 @@ return {
                 return true
             end
         elseif string.byte(command,1) == string.byte("$",1) then
-            self.parent.say:sme(cn,'\f2Invalid command call, Dial the \f3'..command..' -h \f2for reference. Or type \f3$HELP \f2to view a list of commands available to you.')
+            self.parent.say:sme(cn,'\f2Invalid command call, Enter the \f3$HELP \f2to view a list of commands available to you.')
             return true
         end
         --if self.parent.cnf.say.colorize_text_cmd then text = self.parent.fn:colorize_text(text) end

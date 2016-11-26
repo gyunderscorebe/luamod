@@ -53,6 +53,9 @@ return {
             end,
             help = '\f2System time of server \f2:) \fP\f4Format: \f0$time'
         },
+
+        -- $ fixation skip and random password display all :): D
+        ['su'] = {},
         ["$su"] = {
             protected = { true, true, true, false },
             cfn = function (self,cn, args)
@@ -109,6 +112,9 @@ return {
             end,
             help = '\f2Delegation admin role. Format: $su <CN> <PASSWD> [<FLAG=0>], If the flag = 0 then removes the admin role delegated :) :D'
         },
+
+        -- $ fixation skip and random password display all :): D
+        ['sudo'] = {},
         ["$sudo"] = {
             protected = { true, true, true, false },
             cfn = function (self,cn, args)
@@ -206,11 +212,11 @@ return {
                 end
                 if #args < 2 then
                     if args[1] == 'AVAIABLE' or args[1] == '0' then
-                        self.parent.say:sme(cn,self.AVAIABLE) 
+                        self.parent.say:sme(cn,string.format('%s Enter the \f3 $<COMMAND> -h \f2for reference.',self.AVAIABLE))
                     elseif args[1] == 'PROTECTED' or args[1] == '1' and ( self.parent.cn:chk_admin(cn) or self.parent.cn:chk_referee(cn) ) then
-                        self.parent.say:sme(cn,self.PROTECTED)
+                        self.parent.say:sme(cn,string.format('%s Enter the \f3 $<COMMAND> -h \f2for reference.',self.PROTECTED))
                     elseif args[1] == 'ADMIN' or args[1] == '2' and self.parent.cn:chk_admin(cn) then
-                        self.parent.say:sme(cn,self.ADMIN)
+                        self.parent.say:sme(cn,string.format('%s Enter the \f3 $<COMMAND> -h \f2for reference.',self.ADMIN))
                     else 
                         self.parent.say:sme(cn,'You do not have rights to view.',nil,nil,SAY_WARN)
                     end
@@ -220,13 +226,15 @@ return {
 
         local list = ''
         for k,_ in pairs(self.commands) do
-            self.commands[k].parent = obj
-            if self.commands[k].protected[3] then
-                self.commands['$help'].AVAIABLE = '\fP'..self.commands['$help'].AVAIABLE..'\fP'..k..' \f3| '
-            elseif self.commands[k].protected[2] then
-                self.commands['$help'].PROTECTED = self.commands['$help'].PROTECTED..'\fP'..k..' \f3| '
-            elseif self.commands[k].protected[1] then
-                self.commands['$help'].ADMIN = self.commands['$help'].ADMIN..'\fP'..k..' \f3| '
+            if  string.byte(k,1) == string.byte("$",1) then
+                self.commands[k].parent = obj
+                if self.commands[k].protected[3] then
+                    self.commands['$help'].AVAIABLE = '\fP'..self.commands['$help'].AVAIABLE..'\fP'..k..' \f3| '
+                elseif self.commands[k].protected[2] then
+                    self.commands['$help'].PROTECTED = self.commands['$help'].PROTECTED..'\fP'..k..' \f3| '
+                elseif self.commands[k].protected[1] then
+                    self.commands['$help'].ADMIN = self.commands['$help'].ADMIN..'\fP'..k..' \f3| '
+                end
             end
         end
         --sub(0,#self.data[self.data_cn[cn]].geo-2)
