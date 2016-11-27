@@ -57,9 +57,9 @@ return {
     },
     roles = {
             --clientroles
-        [CR_ADMIN] = 'ADMIN',
-        [CR_DEFAULT] = 'DEFAULT',
-        [100] = 'REFEREE',
+        [CR_ADMIN] = ADMIN,
+        [CR_DEFAULT] = DEFAULT,
+        [100] = REFEREE,
         REFEREE = 100,
         ADMIN = CR_ADMIN,
         DEFAULT = CR_DEFAULT
@@ -93,11 +93,11 @@ return {
         return nil
     end,
     chk_admin = function(self,cn)
-        if self:chk_cn(cn) and self.data[self.data_cn[cn]].role == self:get_role('ADMIN') and isadmin(cn) then return true end
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].role == self:get_role(ADMIN) and isadmin(cn) then return true end
         return false
     end,
     chk_referee = function(self,cn)
-        if self:chk_cn(cn) and self.data[self.data_cn[cn]].referee == self:get_role('REFEREE') then return true end
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].referee == self:get_role(REFEREE) then return true end
         return false
     end,
     chk_cn = function(self,cn)
@@ -150,25 +150,25 @@ return {
 
             self.data_cn[cn] = #self.data
             self.data[self.data_cn[cn]].dcn = self.data_cn[cn]
-            self.data[self.data_cn[cn]].role = self:get_role('DEFAULT')
-            self.data[self.data_cn[cn]].referee = self:get_role('DEFAULT')
-            if isadmin(cn) then self.data[self.data_cn[cn]].role = self:get_role('ADMIN') end
+            self.data[self.data_cn[cn]].role = self:get_role(DEFAULT)
+            self.data[self.data_cn[cn]].referee = self:get_role(DEFAULT)
+            if isadmin(cn) then self.data[self.data_cn[cn]].role = self:get_role(ADMIN) end
 
             if self.parent.cnf.geo.activate then
                 if self.parent.cnf.geo.country then 
                     self.data[self.data_cn[cn]].country = geoip.ip_to_country(ip)
                     self.data[self.data_cn[cn]].iso = geoip.ip_to_country_code(ip)
                     if self.parent.cnf.geo.say_iso then
-                        self.data[self.data_cn[cn]].geo = string.format('%s \f5%s\f2, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].iso)
+                        self.data[self.data_cn[cn]].geo = string.format(self.parent.cnf.say.text.geo_iso, self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].iso)
                     end
                     if self.parent.cnf.geo.say_country then
-                        self.data[self.data_cn[cn]].geo = string.format('%s \f0%s\f2, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].country)
+                        self.data[self.data_cn[cn]].geo = string.format(self.parent.cnf.say.text.geo_country, self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].country)
                     end  
                 end
                 if self.parent.cnf.geo.city then
                     self.data[self.data_cn[cn]].city = geoip.ip_to_city(ip)
                     if self.parent.cnf.geo.say_city then
-                        self.data[self.data_cn[cn]].geo = string.format('%s \fP%s\f2, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].city)
+                        self.data[self.data_cn[cn]].geo = string.format(self.parent.cnf.say.text.geo_city, self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].city)
                     end
                 end
             end
@@ -181,9 +181,9 @@ return {
                             --if self.parent.cnf.geo.activate and self.parent.cnf.geo.city and self.parent.cnf.geo.say_city then
                             --        geo = string.format('%s\f9%s ',geo,self.data[self.data_cn[cn]].city)
                             --end
-                            self.parent.say:sto(cn,v.cn,string.format("%s \f2CONNECTED FROM %s \f4IP: \f3%s",name,self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].ip),nil,nil,SAY_WARN)
+                            self.parent.say:sto(cn,v.cn,string.format(self.parent.cnf.say.text.connect_for_admin,name,self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].ip),nil,nil,SAY_WARN)
                         else
-                            self.parent.say:sto(cn,v.cn,string.format("%s \f2CONNECTED FROM %s",name,self.data[self.data_cn[cn]].geo,(self.data[self.data_cn[cn]].iso or '')),nil,nil,SAY_WARN)
+                            self.parent.say:sto(cn,v.cn,string.format(self.parent.cnf.say.text.connect,name,self.data[self.data_cn[cn]].geo,(self.data[self.data_cn[cn]].iso or '')),nil,nil,SAY_WARN)
                         end
                     end
                 end
@@ -191,22 +191,29 @@ return {
             if self.parent.cnf.cn.say_connect_me then
                 local key_about, map, gema, mode, autoteam  = '', '', '','',''
                 if self.parent.cnf.cn.say_connect_load_map then
-                    map = '\nYou are to \fP'..self.parent.gm.map.name..' \f2map. '
-                    if self.parent.cnf.map.say.load_map_gema and self.parent.gm.map:is_gema_map() then 
+                    map =string.format(self.parent.cnf.say.text.welcome_name_map, self.parent.gm.map.name)
+                    if self.parent.cnf.cn.say_connect_load_map_gema and self.parent.gm.map:is_gema_map() then 
                         --if self.parent.cnf.map.team.auto.gema then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
-                        gema = "\f0Attention \f9G\f2e\f1m\f0A "
+                        gema = self.parent.cnf.say.text.atention_gema
                     end
                     --if self.parent.cnf.map.team.auto.map then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
-                    if self.parent.cnf.map.say.autoteam then
-                        autoteam = autoteam..'\fPAutoteam is '
+                    if self.parent.cnf.cn.say_connect_autoteam then
                         if getautoteam() then
-                            if self.parent.gm.map:is_gema_map() then autoteam = autoteam..'\f3ENABLED ' else autoteam = autoteam..'\f0ENABLED ' end
+                            if self.parent.gm.map:is_gema_map() then
+                                autoteam = string.format(self.parent.cnf.say.text.autoteam, SAY_ENABLED_3)
+                            else
+                                autoteam = string.format(self.parent.cnf.say.text.autoteam, SAY_ENABLED_0)
+                            end
                         else
-                            if self.parent.gm.map:is_gema_map() then autoteam = autoteam..'\f0DISABLED ' else autoteam = autoteam..'\f3DISABLED ' end
+                            if self.parent.gm.map:is_gema_map() then
+                                autoteam = string.format(self.parent.cnf.say.text.autoteam, SAY_DISABLED_0)
+                            else
+                                autoteam = string.format(self.parent.cnf.say.text.autoteam, SAY_DISABLED_3)
+                            end
                         end
                     end
-                    if self.parent.cnf.map.say.load_map_mode then
-                        mode = '\f9'..self.parent.gm.map.mode_str..' \f2game mode. '
+                    if self.parent.cnf.cn.say_connect_load_map_mode then
+                        mode = string.format(self.parent.cnf.say.text.game_mode, self.parent.gm.map.mode_str)
                     end
                 end
                 if self.parent.cnf.cn.say_connect_about then
@@ -225,7 +232,7 @@ return {
                     key_about =  self.parent.cnf.say.text.key_about
                 end
                 self.parent.say:sme(cn, string.format("%s%s%s%s",map,mode,gema,autoteam))
-                self.parent.say:sme(cn, string.format("FOR SERVER OF FRIENDS, WELCOME YOU %s\f2.",name))
+                self.parent.say:sme(cn, string.format("%s %s",self.parent.cnf.say.text.welcome,name))
                 self.parent.say:sme(cn, string.format("%s",key_about))
 
             end
@@ -306,7 +313,7 @@ return {
                 end
             if self.d_force.message == nil then self.d_force.message = " !" end
                 if self.parent.cnf.say.wrapp.randomcolor then name = self.parent.fn:random_color()..name end
-                self.parent.say:sall(-1,string.format("%s \f1player leaves the playing field !!! Reason for leaving: \f3%s. \f1%s",name,self:get_d_reasson(reasson) or "DISCONNECT", self.d_force.message)) 
+                self.parent.say:sall(-1,string.format("%s \f1player leaves the playing field !!! Reason for leaving: \f3%s. \f1%s",name,self:get_d_reasson(reasson) or DISCONNECT, self.d_force.message)) 
             end
             if self.d_force.cn ~= nil then
                 self.d_force.cn = nil

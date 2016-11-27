@@ -143,12 +143,16 @@ return {
         end,
         say = function (self,name,mode)
             if self.parent.parent.cnf.map.say.load_map then
+                
                 self.parent.parent.log:w('Changed map '..name..' mode', mode)
+                
                 local gema, mode, autoteam  = '', '',''
+                
                 if self:is_gema_map() then 
 --                    if self.parent.cnf.map.team.auto.gema then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
-                    if self.parent.parent.cnf.map.say.load_map_gema then gema = "\f0Attention \f9G\f2e\f1m\f0A " end
+                    if self.parent.parent.cnf.map.say.load_map_gema then gema = self.parent.parent.cnf.say.text.atention_gema end
                 end
+
                 if self.parent.parent.cnf.map.say.rules_map then
                     if self:is_gema_map() and self.parent.parent.cnf.map.say.rules_map_gema then
                         self.parent.parent.say:sall(-1, self.parent.parent.cnf.say.text.rules_map_gema)
@@ -156,18 +160,27 @@ return {
                         self.parent.parent.say:sall(-1, self.parent.parent.cnf.say.text.rules_map)
                     end
                 end
-                if self.parent.parent.cnf.map.say.autoteam then
-                    autoteam = autoteam..'\fPAutoteam is '
+                
+                if self.parent.parent.cnf.map.say.autoteam  then
                     if getautoteam() then
-                        if self:is_gema_map() then autoteam = autoteam..'\f3ENABLED ' else autoteam = autoteam..'\f0ENABLED ' end
+                        if self:is_gema_map() then
+                            autoteam = string.format(self.parent.parent.cnf.say.text.autoteam, SAY_ENABLED_3)
+                        else
+                            autoteam = string.format(self.parent.parent.cnf.say.text.autoteam, SAY_ENABLED_0)
+                        end
                     else
-                        if self:is_gema_map() then autoteam = autoteam..'\f0DISABLED ' else autoteam = autoteam..'\f3DISABLED ' end
+                        if self:is_gema_map() then
+                            autoteam = string.format(self.parent.parent.cnf.say.text.autoteam, SAY_DISABLED_0)
+                        else
+                            autoteam = string.format(self.parent.parent.cnf.say.text.autoteam, SAY_DISABLED_3)
+                        end
                     end
                 end
+
                 if self.parent.parent.cnf.map.say.load_map_mode then
-                    mode = '\f9'..self.mode_str..' \f2game mode. '
+                    mode = string.format(self.parent.parent.cnf.say.text.game_mode, self.mode_str)
                 end
-                self.parent.parent.say:sall(-1, string.format("\n\f2Installed \fP%s \f2playground. %s%s%s",self.name,mode,gema,autoteam))
+                self.parent.parent.say:sall(-1, string.format(self.parent.parent.cnf.say.text.load_map, self.name,mode,gema,autoteam))
             end
         end,
     },
@@ -260,6 +273,6 @@ return {
         self.mode.parent = self
         self.map.parent = self
         self.vote.parent = self
-        self.parent.log:ib('GAME init OK')
+        self.parent.log:i('GAME init OK')
     end
 }

@@ -1,3 +1,12 @@
+-- constants
+
+ADMIN = 'ADMIN'
+DEFAULT = 'DEFAULT'
+REFEREE = 'REFEREE'
+
+DISCONNECT = 'DISCONNECT'
+CONNECT = 'CONNECT'
+
 -- consolelog
 
 LOG_INFO = 2
@@ -16,7 +25,11 @@ SAY_SYS = '\f5'
 SAY_GRAY = '\f4'
 SAY_LIGHTGRAY = '\fY'
 SAY_DARKGRAY = '\fZ'
-SAY_MAGENTA = '\fX'
+SAY_MAGENTA = '\fX'            
+SAY_ENABLED_0 = '\f0ENABLED '
+SAY_ENABLED_3 = '\f3ENABLED '
+SAY_DISABLED_0 = '\f0DISABLED '
+SAY_DISABLED_3 = '\f3DISABLED '
 
 -- color
 
@@ -24,5 +37,6 @@ C_CODES = { "\f0", "\f1", "\f2", "\f3", "\f4", "\f5", "\f6", "\f7", "\f8", "\f9"
 CC_LOOKUP = { "\\f0", "\\f1", "\\f2", "\\f3", "\\f4", "\\f5", "\\f6", "\\f7", "\\f8", "\\f9", "\\fA", "\\fB", "\\fC", "\\fD", "\\fE",
   "\\fF", "\\fG", "\\fH", "\\fI", "\\fJ", "\\fK", "\\fL", "\\fM", "\\fN", "\\fO", "\\fP", "\\fQ", "\\fR", "\\fS", "\\fT",
   "\\fU", "\\fV", "\\fW", "\\fX", "\\fY", "\\fZ", "\\fB"}
+
 
 logline(LOG_INFO,'SDBS: Player SYSTEM says: Module function constants is OK')
