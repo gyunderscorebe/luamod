@@ -142,7 +142,11 @@ return {
             })
 
 
-            if self.parent.cnf.say.wrapp.randomcolor then name = self.parent.fn:random_color()..name end
+            if self.parent.cnf.say.wrapp.randomcolor then
+                name = self.parent.fn:random_color()..name
+            else
+                name = SAY_INFO..name
+            end
 
             self.data_cn[cn] = #self.data
             self.data[self.data_cn[cn]].dcn = self.data_cn[cn]
@@ -155,16 +159,16 @@ return {
                     self.data[self.data_cn[cn]].country = geoip.ip_to_country(ip)
                     self.data[self.data_cn[cn]].iso = geoip.ip_to_country_code(ip)
                     if self.parent.cnf.geo.say_iso then
-                        self.data[self.data_cn[cn]].geo = string.format('%s\f1%s, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].iso)
+                        self.data[self.data_cn[cn]].geo = string.format('%s \f5%s\f2, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].iso)
                     end
                     if self.parent.cnf.geo.say_country then
-                        self.data[self.data_cn[cn]].geo = string.format('%s\f2%s, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].country)
+                        self.data[self.data_cn[cn]].geo = string.format('%s \f0%s\f2, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].country)
                     end  
                 end
                 if self.parent.cnf.geo.city then
                     self.data[self.data_cn[cn]].city = geoip.ip_to_city(ip)
                     if self.parent.cnf.geo.say_city then
-                        self.data[self.data_cn[cn]].geo = string.format('%s\f9%s, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].city)
+                        self.data[self.data_cn[cn]].geo = string.format('%s \fP%s\f2, ',self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].city)
                     end
                 end
             end
@@ -177,27 +181,53 @@ return {
                             --if self.parent.cnf.geo.activate and self.parent.cnf.geo.city and self.parent.cnf.geo.say_city then
                             --        geo = string.format('%s\f9%s ',geo,self.data[self.data_cn[cn]].city)
                             --end
-                            self.parent.say:sto(cn,v.cn,string.format("\f9%s \f0player went to the playground \f3!!! %s \f4IP: %s",name,self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].ip),nil,nil,SAY_WARN)
+                            self.parent.say:sto(cn,v.cn,string.format("%s \f2CONNECTED FROM %s \f4IP: \f3%s",name,self.data[self.data_cn[cn]].geo,self.data[self.data_cn[cn]].ip),nil,nil,SAY_WARN)
                         else
-                            self.parent.say:sto(cn,v.cn,string.format("\f9%s \f0player went to the playground \f3!!! %s",name,self.data[self.data_cn[cn]].geo,(self.data[self.data_cn[cn]].iso or '')),nil,nil,SAY_WARN)
+                            self.parent.say:sto(cn,v.cn,string.format("%s \f2CONNECTED FROM %s",name,self.data[self.data_cn[cn]].geo,(self.data[self.data_cn[cn]].iso or '')),nil,nil,SAY_WARN)
                         end
                     end
                 end
             end
             if self.parent.cnf.cn.say_connect_me then
-                local gema, autoteam  = '', '\fPAutoteam is '
-                if self.parent.cnf.map.say.load_map then
-                    if self.parent.gm.map:is_gema_map() then 
+                local key_about, map, gema, mode, autoteam  = '', '', '','',''
+                if self.parent.cnf.cn.say_connect_load_map then
+                    map = '\nYou are to \fP'..self.parent.gm.map.name..' \f2map. '
+                    if self.parent.cnf.map.say.load_map_gema and self.parent.gm.map:is_gema_map() then 
                         --if self.parent.cnf.map.team.auto.gema then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
-                        if self.parent.cnf.map.say.load_map then gema = "\fX!!! GEMA !!!" end
+                        gema = "\f0Attention \f9G\f2e\f1m\f0A "
                     end
                     --if self.parent.cnf.map.team.auto.map then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
-                    if getautoteam() then autoteam = autoteam..'ENABLED' else autoteam = autoteam..'DISABLED' end
+                    if self.parent.cnf.map.say.autoteam then
+                        autoteam = autoteam..'\fPAutoteam is '
+                        if getautoteam() then
+                            if self.parent.gm.map:is_gema_map() then autoteam = autoteam..'\f3ENABLED ' else autoteam = autoteam..'\f0ENABLED ' end
+                        else
+                            if self.parent.gm.map:is_gema_map() then autoteam = autoteam..'\f0DISABLED ' else autoteam = autoteam..'\f3DISABLED ' end
+                        end
+                    end
+                    if self.parent.cnf.map.say.load_map_mode then
+                        mode = '\f9'..self.parent.gm.map.mode_str..' \f2game mode. '
+                    end
                 end
-                self.parent.say:sys(cn,'\n')
-                self.parent.say:sys(cn, self.parent.cnf.cn.motd_str.connect)
-                self.parent.say:sys(cn,'\n')
-                self.parent.say:sme(cn, string.format("\f9%s \f3!!! \f2We are glad to see you on our server. You are %s \f0map. %s \f3Attention %s \f0%s \f2Game Mode%s",name,self.parent.gm.map.name,autoteam,gema ,self.parent.gm.map.mode_str,self.parent.cnf.cn.motd_str.fix))
+                if self.parent.cnf.cn.say_connect_about then
+                    --self.parent.say:sys(cn,'\n')
+                    self.parent.say:sys(cn, self.parent.cnf.say.text.about)
+                    --self.parent.say:sys(cn,'\n')
+                end
+                if self.parent.cnf.cn.say_connect_rules_map then
+                    if self.parent.gm.map:is_gema_map() and self.parent.cnf.cn.say_connect_rules_map_gema then
+                        self.parent.say:sme(cn, self.parent.cnf.say.text.rules_map_gema)
+                    elseif not self.parent.gm.map:is_gema_map() and self.parent.cnf.cn.say_connect_rules_map_normal then
+                        self.parent.say:sme(cn, self.parent.cnf.say.text.rules_map)
+                    end
+                end
+                if self.parent.cnf.cn.say_connect_about or ( self.parent.cnf.cn.say_connect_rules_map and (self.parent.cnf.cn.say_connect_rules_map_gema or self.parent.cnf.cn.say_connect_rules_map_normal) ) then
+                    key_about =  self.parent.cnf.say.text.key_about
+                end
+                self.parent.say:sme(cn, string.format("%s%s%s%s",map,mode,gema,autoteam))
+                self.parent.say:sme(cn, string.format("FOR SERVER OF FRIENDS, WELCOME YOU %s\f2.",name))
+                self.parent.say:sme(cn, string.format("%s",key_about))
+
             end
             self.parent.log:i('AddCn OK',cn)
             --if self.parent.C_LOG then self:get_chk_data_cn() end
@@ -470,7 +500,7 @@ return {
                     self:force_disconnect(self.d_force.cn,self.d_force.reasson)
                     --return PLUGIN_BLOC
                 else
-                    if self.parent.cnf.cn.sya_not_admin_rename then self.parent.say:sall(cn, string.format("Player \f3%s \f2tried to become an administrator. Follow the rules, too \f3:D",self.data[self.data_cn[cn]].name)) end
+                    if self.parent.cnf.cn.sya_not_admin_rename then self.parent.say:sall(cn, string.format("Player \f3%s \f2tried to become an administrator. Follow the rules, too",self.data[self.data_cn[cn]].name)) end
                     setrole(cn,self:get_role('DEFAULT'))
                     return true
                     -- PLUGIN_BLOC
@@ -511,7 +541,7 @@ return {
         --if self.parent.cnf.say.colorize_text_cmd then text = self.parent.fn:colorize_text(text) end
         if self.parent.cnf.say.colorize_text_cmd then text = self.parent.say:colorize(text) end
         --self.parent.say:allexme(cn,text)
-        self.parent.say:all(cn,text)
+        self.parent.say:allexme(cn,text)
         --self.parent.say:sme(cn,text)
         return true
     end,

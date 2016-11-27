@@ -28,17 +28,17 @@ return {
                 if isconnected(tcn) then
                     pm = SAY_PRIVATE
                     --name = getname(tcn) 
-                    clientprint(tcn,string.format('%s%s%s%s %s%s%s',cflag,self:wcursor(tcn,self.parent.cn.data[self.parent.cn.data_cn[tcn]].name,server,domain),nflag,self:wname(cn,name,sys),pm,tflag,text))
+                    clientprint(tcn,string.format('%s%s%s%s%s%s%s',cflag,self:wcursor(tcn,self.parent.cn.data[self.parent.cn.data_cn[tcn]].name,server,domain),nflag,self:wname(cn,name,sys),pm,tflag,text))
                     return
                 else return end
             else
                 pm = ''
             end
-            clientprint(tcn,string.format('%s%s%s%s %s%s%s',cflag,self:wcursor(tcn,self.parent.cn.data[self.parent.cn.data_cn[tcn]].name,server,domain),nflag,self:wname(cn,name,sys),pm,tflag,text))
+            clientprint(tcn,string.format('%s%s%s%s%s%s%s',cflag,self:wcursor(tcn,self.parent.cn.data[self.parent.cn.data_cn[tcn]].name,server,domain),nflag,self:wname(cn,name,sys),pm,tflag,text))
         elseif tcn == -1 then
             for _,v in ipairs(self.parent.cn.data) do
                 if excn ~= v.cn then 
-                    clientprint(v.cn,string.format('%s%s%s%s %s%s',cflag,self:wcursor(cn,v.name,server,domain),nflag,self:wname(cn,name,sys),tflag,text)) 
+                    clientprint(v.cn,string.format('%s%s%s%s%s%s',cflag,self:wcursor(cn,v.name,server,domain),nflag,self:wname(cn,name,sys),tflag,text)) 
                 end
             end
         end

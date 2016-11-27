@@ -1,27 +1,34 @@
 -- Дефолтный конфигурационный файл
 
 return {
+    -- включать токо для отладки, идет вывод в сонсоль
     c_log = true,
+    -- режим сообщений для гема
+    say_gema = true,
     say = {
         cursor = {
             def_name = "ac",
             def_server = "frends",
             def_domain = "vah-clan.ga",
-            active = true,
-            randomcolor = true,
+            active = false,
+            randomcolor = false,
             color = SAY_GRAY,
             format = "[<NAME>@<SERVER>.<DOMAIN>]$"
         },
         -- обертка имени игрока. типа >>>-{<NAME>}-> (0). а также задание параметров отображения имени если даже active = false
         wrapp = {
             active = true,
-            randomcolor = true,
+            randomcolor = false,
             color = SAY_INFO,
-            delimiter = SAY_LIGHTGRAY..' :',
+            delimiter = SAY_LIGHTGRAY..' : ',
             format = '<CN> <NAME>', --">>>~<NAME>~>(<CN>)"
         },
         text = {
-            color = SAY_TEXT
+            color = SAY_TEXT,
+            key_about = '\n\t\t\t\f9Press F11 to display full information about the clan.',
+            about = '\n\f2INFORMATION\n\t\f1SITE: \f5http://vah-clan.ga\n\t\f1EMAIL: \f5admin@vah-clan.ga\n\t\f1IRC: \f5freenode #vah\n\t\f1WIKI: \f5http://wiki.cubers.net/action/view/VAH_clan\n\t\f1FORUM: \f5http://forum.cubers.net/thread-8744.html\n\t\f1enter \f3$help \f1in console to see a list of commands',
+            rules_map = '\nf0RULES:',
+            rules_map_gema = '\n\f0RULES: \f2NO KILLING, NO CHEATING, NO HAHBIND'
         },
         -- включить использование цветовых символов в выводе текста cmd комманд
         colorize_text_cmd = true
@@ -34,7 +41,7 @@ return {
         -- файл весит ~ 17Mb
         city = true,
         say_country = true,
-        say_iso = false,
+        say_iso = true,
         say_city = true,
         -- пути к файлам баз GeoIp
         f_country = 'geo/GeoIP.dat',
@@ -64,8 +71,20 @@ return {
             load_map = true,
             -- Сказать что это карта гема
             load_map_gema = true,
+            -- Сказать какой режим карты
+            load_map_mode = false,
             --сказать о состоянии autoteam когда карта загружена
-            autoteam = true
+            autoteam = false,
+            -- Сказать правила игры при загрузке карты
+            rules_map = true,
+            -- Сказать правила игры при загрузке обычной карты
+            rules_map_normal = false,
+            -- Сказать правила игры при загрузке карты GEMA
+            rules_map_gema = true
+        },
+        -- запуск сервера или загрузка карты в режиме master, w
+        mode = {
+
         }
     },
     flag = {
@@ -81,12 +100,16 @@ return {
         }
     },
     cn = {
-        motd_str = {
-            fix = '\n\t\t\t\f9Press F11 to display full information about the clan.',
-            connect = '\f9INFORMATION\n\t\f2SITE: http://vah-clan.ga\n\tEMAIL: admin@vah-clan.ga\n\tIRC: freenode #vah\n\tWIKI: http://wiki.cubers.net/action/view/VAH_clan\n\tFORUM: http://forum.cubers.net/thread-8744.html\n\t\f0enter \f3$help \f0in console to see a list of commands',
-            change_map = '',
-            change_map_gema = ''
-        },
+        -- сказать ABOUT CLAN при заходе на сервер
+        say_connect_about = true,
+        -- Сказать какая карта при заходе игрока на сервер
+        say_connect_load_map = true,
+        -- сказать правила игры при заходе на сервер
+        say_connect_rules_map = true,
+        -- сказать правила нормальной игры при заходе на сервер
+        say_connect_rules_map_normal = false,
+        -- сказать правила режима GEMA при заходе на сервер
+        say_connect_rules_map_gema = true,
         -- сказать всем что игрок на поле
         say_connect = true,
         -- поприветствовать игрока
@@ -127,7 +150,7 @@ return {
         say_active_chkeck_ban_name = true,
         -- чек лист с запрещенными состовляющими ника )))
         chkeck_ban_name_list = {
-            'idioto', 'unarme', 'bich', 'stef'
+            'idioto', 'unarme', 'bich', 'stef', 'troll', 'tm'
         }
     }
 }

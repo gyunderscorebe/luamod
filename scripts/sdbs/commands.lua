@@ -22,8 +22,17 @@ return {
             cfn = function (self,cn, args)
                 self.parent.log:i("used $about",cn)
                 if args[1] == '-h' then self.parent.say:me(cn,self.help) return true end
-                self.parent.say:sme(cn, self.parent.cnf.cn.motd_str.connect)
-                self.parent.say:sme(cn, self.parent.cnf.cn.motd_str.fix)
+                self.parent.say:sme(cn, self.parent.cnf.say.text.about)
+                --if self.parent.cnf.map.say.rules_map then
+                    --if self.parent.gm.map:is_gema_map() and self.parent.cnf.map.say.rules_map_normal then
+                    if self.parent.gm.map:is_gema_map() then
+                        self.parent.say:sme(cn, self.parent.cnf.say.text.rules_map_gema)
+                    --elseif self.parent.cnf.map.say.rules_map_gema then
+                    else
+                        self.parent.say:sme(cn, self.parent.cnf.say.text.rules_map)
+                    end
+                --end
+                self.parent.say:sme(cn, self.parent.cnf.say.text.key_about)
             end,
             help = '\f1About. \f0$about \f2:) \fPFormat: \f0$1'
         },

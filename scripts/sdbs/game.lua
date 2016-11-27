@@ -29,11 +29,11 @@ return {
             self.fa = {
                 [FA_DROP] = function(self,cn,action,flag)
                     if self.parent.parent.cnf.flag.reset.drop then flagaction(cn,FA_RESET,flag) end
-                    if self.parent.parent.cnf.flag.reset.say_drop then self.parent.parent.say:sallexme(cn,string.format("\fPPlayer \f3%s \fPflag dropped, probably wanted to hide \fX:)",self.parent.parent.cn.data[self.parent.parent.cn.data_cn[cn]].name)) end
+                    if self.parent.parent.cnf.flag.reset.say_drop then self.parent.parent.say:sallexme(cn,string.format("\fPPlayer \f3%s \fPflag dropped",self.parent.parent.cn.data[self.parent.parent.cn.data_cn[cn]].name)) end
                 end,
                 [FA_LOST] = function(self,cn,action,flag)
                     if self.parent.parent.cnf.flag.reset.lost then flagaction(cn,FA_RESET,flag) end
-                    if self.parent.parent.cnf.flag.reset.say_lost then self.parent.parent.say:sallexme(cn,string.format("\fPPlayer loses \f3%s \fPflag, probably due to death \f4:(",self.parent.parent.cn.data[self.parent.parent.cn.data_cn[cn]].name)) end
+                    if self.parent.parent.cnf.flag.reset.say_lost then self.parent.parent.say:sallexme(cn,string.format("\fPPlayer loses \f3%s \fPflag",self.parent.parent.cn.data[self.parent.parent.cn.data_cn[cn]].name)) end
                 end
             }
             if self.fa[action]~= nil then  self.fa[action](self,cn,action,flag) end
@@ -115,7 +115,7 @@ return {
             return false
         end,
         is_gema_map = function(self)
-            return self.mode_gema or false
+            return self.mode_gema
         end,
         set_info = function(self,name,mode)
             self.name = name or getmapname()
@@ -143,25 +143,31 @@ return {
         end,
         say = function (self,name,mode)
             if self.parent.parent.cnf.map.say.load_map then
-                self.parent.parent.log:w('Changed map '..name)
-                local gema, autoteam  = '', ''
+                self.parent.parent.log:w('Changed map '..name..' mode', mode)
+                local gema, mode, autoteam  = '', '',''
                 if self:is_gema_map() then 
 --                    if self.parent.cnf.map.team.auto.gema then autoteam = autoteam..'\f9ENABLED' else autoteam = autoteam..'\f9DISABLED' end
-                    if self.parent.parent.cnf.map.say.load_map then gema = "\fX!!! GEMA !!!" end
+                    if self.parent.parent.cnf.map.say.load_map_gema then gema = "\f0Attention \f9G\f2e\f1m\f0A " end
                 end
-                if self:is_gema_map() then
-                    self.parent.parent.say:sys(cn, self.parent.parent.cnf.cn.motd_str.change_map_gema..'GEMA')
-                else
-                    self.parent.parent.say:sys(cn, self.parent.parent.cnf.cn.motd_str.change_map..'MAP')
-                end
-                if self.parent.parent.cnf.map.say.autoteam then
-                    if getautoteam() then
-                        autoteam = '\f9Autoteam is '..autoteam..'\f0ENABLED'
-                    else
-                        autoteam = '\f9Autoteam is '..autoteam..'\f3DISABLED'
+                if self.parent.parent.cnf.map.say.rules_map then
+                    if self:is_gema_map() and self.parent.parent.cnf.map.say.rules_map_gema then
+                        self.parent.parent.say:sall(-1, self.parent.parent.cnf.say.text.rules_map_gema)
+                    elseif not self:is_gema_map() and self.parent.parent.cnf.map.say.rules_map_normal then
+                        self.parent.parent.say:sall(-1, self.parent.parent.cnf.say.text.rules_map)
                     end
                 end
-                self.parent.parent.say:sall(-1, string.format("\fPInstalled \f9%s \fPPlayground, \f9%s \fPmode. \f3%s %s",self.name,self.mode_str,gema,autoteam))
+                if self.parent.parent.cnf.map.say.autoteam then
+                    autoteam = autoteam..'\fPAutoteam is '
+                    if getautoteam() then
+                        if self:is_gema_map() then autoteam = autoteam..'\f3ENABLED ' else autoteam = autoteam..'\f0ENABLED ' end
+                    else
+                        if self:is_gema_map() then autoteam = autoteam..'\f0DISABLED ' else autoteam = autoteam..'\f3DISABLED ' end
+                    end
+                end
+                if self.parent.parent.cnf.map.say.load_map_mode then
+                    mode = '\f9'..self.mode_str..' \f2game mode. '
+                end
+                self.parent.parent.say:sall(-1, string.format("\n\f2Installed \fP%s \f2playground. %s%s%s",self.name,mode,gema,autoteam))
             end
         end,
     },
