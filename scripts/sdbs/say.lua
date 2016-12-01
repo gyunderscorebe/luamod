@@ -1,0 +1,30 @@
+return {
+
+
+    out = function(self,cn,text,excn)
+        clientprint(cn,text,excn)
+    end,
+
+    to = function(self,tcn,text)
+        if self.parent.cnf.show_mod or self.parent.cn:chk_cn_show_mod(tcn) then self:out(tcn,text) end
+    end,
+    me = function(self,cn,text)
+        if self.parent.cnf.show_mod or self.parent.cn:chk_cn_show_mod(tcn) then self:out(cn,text) end
+    end,
+    allex = function(self,excn,text)
+        if self.parent.cnf.show_mod then self:out(-1,text,excn) end
+    end,
+    allexme = function(self,cn,text)
+        if self.parent.cnf.show_mod then self:out(-1,text,cn) end
+    end,
+    all = function(self,text)
+        if self.parent.cnf.show_mod then self:out(-1,text) end
+    end,
+
+    init = function(self,obj)
+        self.parent = obj
+       --self.parent = setmetatable( {}, { __index = obj } )
+        --self.parent = setmetatable( {}, { __index = obj, __newindex = obj } )
+        self.parent.log:i('Module say init OK')
+    end
+}
