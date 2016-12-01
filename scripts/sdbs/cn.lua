@@ -131,37 +131,85 @@ return {
         end
     end,
     auto_kick_name = function(self,cn,name)
+        sdbs.log:i('Check kick_name_list', cn)
+        local lname = name:lower()
         if self.parent.cnf.cn.auto_kick_name then
-            sdbs.log:i('Check kick_name_list', cn)
-            if self.parent.cnf.cn.auto_kick_name then
-                for _,v in ipairs(self.parent.cnf.cn.auto_kick_name_list) do
-                    if name:find(v) then
-                        self.parent.log:w("Find name in kick_name_list OK",cn)
-                        self.d_force = {
-                            cn = cn,
-                            reasson = self:get_d_reasson('BADNICK'),
-                        }
-                        if self.parent.cnf.cn.auto_kick_name_say then
-                            self.d_force.message = self.parent.cnf.say.text.auto_kick_name
-                        end
-                        --self:force_disconnect()
-                        return PLUGIN_BLOCK
+            for _,v in ipairs(self.parent.cnf.cn.auto_kick_name_list) do
+                if name:find(v) then
+                    self.parent.log:w("Find name in kick_name_list OK",cn)
+                    self.d_force.cn = cn
+                    self.d_force.reasson = self:get_d_reasson('BADNICK')
+                    if self.parent.cnf.cn.auto_kick_name_say then
+                        self.d_force.message = string.format(self.parent.cnf.say.text.auto_kick_name_message,name)
                     end
+                    --self:force_disconnect()
+                    return true
                 end
             end
         end
+        return false
     end,
+
+    chk_same_and_old_same_name = function (self,cn,name)
+        if #self.data > 0 and ( not self.parent.cnf.cn.name_same or not self.parent.cnf.cn.name_old_same ) then
+            --self.parent.log:w("Name search ")
+            local name = name:lower() 
+            for k,v in ipairs(self.data) do
+                if cn ~= v.cn and k == v.dcn then
+                    if not self.parent.cnf.cn.name_same then
+                        --self.parent.log:w("Name search ".. v.name)
+                        if v.name:lower() == name then
+                            self.parent.log:w(string.format("Find name: %s in name list players = true",name),cn)
+                            self.d_force.cn = cn
+                            self.d_force.reasson = self:get_d_reasson('DUP')
+                            if self.parent.cnf.cn.name_same_say then
+                                self.d_force.message = string.format(self.parent.cnf.say.text.name_same_message,name)
+                            end
+                            return true
+                        end
+                    end
+                    if not self.parent.cnf.cn.name_old_same then
+                        if #v.oldname > 0 then 
+                            for _,vv in ipairs(v.oldname) do
+                                -- self.parent.log:w("Oldname search "..vv..' name '..v.name,cn)
+                                if vv:lower() == name then
+                                    self.parent.log:w(string.format("Find name: %s in old name list players = true",name),cn)
+                                    self.d_force.n = cn
+                                    self.d_force.reasson = self:get_d_reasson('DUP')
+                                    if self.parent.cnf.cn.name_old_same_say then
+                                        self.d_force.message = string.format(self.parent.cnf.say.text.name_old_same_message,name)
+                                    end
+                                    return true
+                                end
+                            end
+                        end
+                    end
+                    -- Вывод в лог сообщений о количестве предидущих имен игроков
+                    --self.parent.log:w(' Count OldName: '..self.data[v.dcn].count_old_name..' Player: '..self.data[v.dcn].name,cn)
+                    -- Вывод в лог сообщений о количестве раз переименования игроков
+                    --self.parent.log:w(' Count rename: '..self.data[v.dcn].count_rename..' Player: '..self.data[v.dcn].name,cn)
+                end
+            end
+        end
+        return false
+        -- PLUGIN_BLOCK
+    end,
+
     on_preconnect = function(self,cn)
         sdbs.log:i('Preconnect...', cn)
         if isconnected(cn) then
             local name = getname(cn)
-            local lname = name:lower()
-            self:auto_kick_name(cn,name)
             self.parent.log:i('Preconnect OK',cn)
-            return true
+            if self:auto_kick_name(cn,name) then              
+                return  PLUGIN_BLOCK
+            end
+            if self:chk_same_and_old_same_name(cn,name) then
+                return  PLUGIN_BLOCK
+            end
         else 
             sdbs.log:i('Preconnect NO', cn)
-            return PLUGIN_BLOCK
+            --return PLUGIN_BLOCK
+            return
         end
     end,
 
@@ -278,28 +326,33 @@ return {
                         end
                     end
 
-                    if self.parent.cnf.cn.connect_say_about then
-                        self.parent.say:me(cn,self.parent.cnf.say.text.about)
-                    end
-
-                    if self.parent.cnf.cn.connect_say_rules_map then
-                        if self.parent.gm.map:is_gema_map() and self.parent.cnf.cn.connect_say_rules_map_gema then
-                            self.parent.say:me(cn, self.parent.cnf.say.text.rules_map_gema)
-                        elseif not self.parent.gm.map:is_gema_map() and self.parent.cnf.cn.connect_say_rules_map_normal then
-                            self.parent.say:me(cn, self.parent.cnf.say.text.rules_map)
-                        end
-                    end
 
                     if self.parent.cnf.cn.connect_say_about or ( self.parent.cnf.cn.connect_say_rules_map and (self.parent.cnf.cn.connect_say_rules_map_gema or self.parent.cnf.cn.connect_say_rules_map_normal) ) then
                         key_about =  self.parent.cnf.say.text.key_about
                     end
+
                     tmr_connect_say = function ()
+                        if self.parent.cnf.cn.connect_say_about then
+                            self.parent.say:me(cn,self.parent.cnf.say.text.about)
+                        end
+                        if self.parent.cnf.cn.connect_say_rules_map then
+                            if self.parent.gm.map:is_gema_map() and self.parent.cnf.cn.connect_say_rules_map_gema then
+                                self.parent.say:me(cn, self.parent.cnf.say.text.rules_map_gema)
+                            elseif not self.parent.gm.map:is_gema_map() and self.parent.cnf.cn.connect_say_rules_map_normal then
+                                self.parent.say:me(cn, self.parent.cnf.say.text.rules_map)
+                            end
+                        end
                         self.parent.say:me(cn, string.format("%s%s%s%s",map,mode,gema,autoteam))
                         self.parent.say:me(cn, string.format("%s %s",self.parent.cnf.say.text.connect_welcome,c_name..name))
                         self.parent.say:me(cn, string.format("%s",key_about))
                         tmr.remove(1)
                     end
-                    tmr.create(1,1000,'tmr_connect_say')
+
+                    if self.parent.cnf.cn.connect_posts_delay then
+                        tmr.create(1,self.parent.cnf.cn.connect_posts_delay_time,'tmr_connect_say')
+                    else  
+                        tmr_connect_say()
+                    end
 
                 end
             end
@@ -318,34 +371,28 @@ return {
         if isconnected(cn) then
             if self.d_force.cn ~= nil and self.d_force.cn == cn then
                 self.parent.log:i('Connect NO. disconnect reasson: '..(self:get_d_reasson(self.d_force.reasson)),cn)
-                self:force_disconnect(cn)
-                return PLUGIN_BLOCK
+                self:force_disconnect(self.d_force.cn,self.d_force.reasson, self.d_force.message )
+                return
+                -- PLUGIN_BLOCK
             end
             self:add_cn(cn)
             self.parent.log:i('Connect OK',cn)
-            if self.parent.flag.C_LOG then self:get_chk_data_cn() end
+            return true
         else
             self.parent.log:i('Connect NO',cn)
-            return false
         end
-        return true
+        if self.parent.flag.C_LOG then self:get_chk_data_cn() end
+        return false
     end,
 
     force_disconnect = function(self,cn,reasson,message)
         self.parent.log:i('Force_disconnect',cn)
         if isconnected(cn) then
-            if self.d_force.cn == nil then
-                self.d_force = {
-                    cn = cn,
-                    reasson = reasson or self:get_d_reasson('NONE'),
-                    message = message or ''
-                }
-            end
-            callhandler('onPlayerDisconnect',self.d_force.cn,self.d_force.reasson)
-            disconnect(self.d_force.cn, self.d_force.reasson)
+            callhandler('onPlayerDisconnect',cn,reasson)
+            disconnect(cn,reasson)
+            delclient(cn)
             --reloadas(cn)
-            delclient(self.d_force.cn)
-            return true
+            return true 
         end
         return false
         -- PLUGIN_BLOCK
@@ -377,56 +424,47 @@ return {
 
     on_disconnect = function(self,cn,reasson)
         self.parent.log:i('Disconnect...',cn)
-        if self.parent.cnf.cn.disconnect_say then
-            local name = nil
-            if self:chk_cn(cn) then
-                name = self.data[self.data_cn[cn]].c_name..self.data[self.data_cn[cn]].name
-            else
-                name = '\f3'..getname(cn) or 'NOT_NAME'
+        if isconnected(cn) then
+            self.parent.log:i('Disconnect is CN ok ...',cn)
+            if self.parent.cnf.cn.disconnect_say then
+                local name = nil
+                if self:chk_cn(cn) then
+                    name = self.data[self.data_cn[cn]].c_name..self.data[self.data_cn[cn]].name
+                else
+                    name = '\f3'..getname(cn) or 'NOT_NAME'
+                end
+
+                local say_disconnect = string.format(self.parent.cnf.say.text.disconnect_all,name)
+
+                if self.parent.cnf.cn.disconnect_reasson_say then
+                    say_disconnect = string.format('%s %s',say_disconnect, self.parent.cnf.say.text.disconnect_reasson )
+                    say_disconnect = string.format(say_disconnect, (self:get_d_reasson(reasson) or DISCONNECT))
+                end
+
+                if self.parent.cnf.cn.disconnect_say_message then
+                    if self.d_force.message ~= nil then 
+                        --sayas(self.d_force.message,cn)
+                        say_disconnect = string.format('%s \n%s',say_disconnect ,self.d_force.message)
+                    end                    
+                end
+
+                self.parent.say:all(say_disconnect)
+
             end
 
-            local say_disconnect = string.format(self.parent.cnf.say.text.disconnect_all,name)
+            self:remove_cn(cn)
 
-            if self.parent.cnf.cn.say_disconnect_reasson then
-                say_disconnect = string.format('%s %s',say_disconnect, self.parent.cnf.say.text.disconnect_reasson )
-                say_disconnect = string.format(say_disconnect, self:get_d_reasson(reasson) or DISCONNECT)
+            if self.d_force.cn ~= nil then
+                self.d_force.cn = nil
+                self.d_force.reasson = nil
+                self.d_force.message = nil
             end
 
-            if self.parent.cnf.cn.disconnect_say_message then
-                if self.d_force.message ~= nil then 
-                    --sayas(self.d_force.message,cn)
-                    say_disconnect = string.format('%s \n%s',say_disconnect ,self.d_force.message)
-                end                    
-            end
-
-            self.parent.say:all(say_disconnect)
-
+            self.parent.log:i('Disconnect OK',cn)
+        else
+            self.parent.log:i('Disconnect NO',cn)
         end
-
-        if self.d_force.cn ~= nil then
-            self.d_force.cn = nil
-            self.d_force.reasson = nil
-            self.d_force.message = nil
-        end
-
-        self:remove_cn(cn)
-        self.parent.log:i('Disconnect OK',cn)
         if self.parent.flag.C_LOG then self:get_chk_data_cn() end
-    end,
-
-    on_role_change = function(self,cn, new_role, hash, pwd, isconnect)
-        self.parent.log:i('Role change...',cn)
-        if self:chk_cn(cn) then
-            local dcn = self.data_cn[cn]
-            if new_role == self:get_role('ADMIN') then
-                self.data[dcn].role = self:get_role('ADMIN')
-                self.parent.log:i('Role change ADMIN: '..tostring(self.data[dcn].role),cn)
-            else
-                self.data[dcn].role = self:get_role('DEFAULT')
-                self.parent.log:i('Role change DEFAULT: '..tostring(self.data[dcn].role),cn)
-            end
-        end
-        self.parent.log:i('Role change OK',cn)
         return true
     end,
 
@@ -442,6 +480,111 @@ return {
             self.parent.say:allexme(cn,string.gsub(text,"\\f","\f"))
             return PLUGIN_BLOCK
         end
+        return true
+    end,
+
+    on_rename = function(self,cn,newname)
+        self.parent.log:i('Rename...',cn)
+        if self:chk_cn(cn) then
+            local dcn = self.data_cn[cn]
+            local c_name = self.data[dcn].c_name
+            self.parent.log:i('Check rename...',cn)
+            
+            if self:auto_kick_name(cn,newname) then
+                self:force_disconnect(self.d_force.cn,self.d_force.reasson,self.d_force.message)
+                return--PLUGIN_BLOCK
+            end
+
+            if self.parent.cnf.cn.rename_chk_admin and self:chk_admin(cn) then
+                self.parent.log:i('Check admin rename. KICK OK',cn)
+                if self.parent.cnf.cn.rename_chk_admin_say then self.parent.say:me(cn, string.format(self.parent.cnf.say.text.admin_rename_message, c_name..self.data[dcn].name)) end
+                setrole(cn,self:get_role('DEFAULT'), false)
+                callhandler('onPlayerRoleChange',cn, self:get_role('DEFAULT'))
+            end
+            
+            if not self.parent.cnf.cn.rename then
+                self.parent.log:i('Check rename. KICK OK',cn)
+                self.d_force.cn = cn
+                self.d_force.reasson = self:get_d_reasson('AUTOKICK')                
+                if self.parent.cnf.cn.not_rename_say then
+                    self.d_force.message = string.format(self.parent.cnf.say.text.not_rename_message,c_name..self.data[dcn].name,newname)
+                end
+                self:force_disconnect(self.d_force.cn,self.d_force.reasson,self.d_force.message)
+                return PLUGIN_BLOCK
+                -- PLUGIN_BLOCK
+            end
+
+            if self:chk_same_and_old_same_name(cn,newname) then
+                self:force_disconnect(cn,self.d_force.reasson,self.d_force.message)
+                return  PLUGIN_BLOCK
+            end
+
+            local kk = true
+            for _,v in ipairs(self.data[dcn].oldname) do
+                if v == self.data[dcn].name then kk = false break end
+            end
+            if kk then
+                table.insert(self.data[dcn].oldname,self.data[dcn].name)
+                self.data[dcn].count_old_name = self.data[dcn].count_old_name + 1
+            end
+            self.data[dcn].count_rename = self.data[dcn].count_rename + 1
+            self.parent.log:w("Rename: ".. self.data[dcn].name..' to '..newname..' Count rename: '..self.data[dcn].count_rename.." Count OldName: "..self.data[dcn].count_old_name,cn)
+            if self.parent.cnf.cn.rename_say then
+                self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.rename_message,c_name..self.data[dcn].name,c_name..newname)) 
+            end
+            self.data[dcn].name = newname
+            self.parent.log:i('Rename OK',cn)
+        end
+        return true
+    end,
+
+    on_role_change = function(self,cn, new_role, hash, pwd, isconnect)
+        if self:chk_cn(cn) then
+            self.parent.log:i('Role change...',cn)
+            local dcn = self.data_cn[cn]
+            local name = self.data[dcn].name
+            local c_name = self.data[dcn].c_name
+            if not self.parent.cnf.cn.rename_admin and #self.data[dcn].oldname ~= 0 then
+                if self.parent.cnf.cn.rename_admin_kick then
+                    self.parent.log:i('Check admin rename in role change. KICK OK',cn)
+                    self.d_force.cn = cn
+                    self.d_force.reasson = self:get_d_reasson('AUTOKICK')
+                    if self.parent.cnf.cn.rename_admin_kick_say then
+                        self.d_force.message = self.parent.cnf.say.text.admin_rename_kick_message
+                    end
+                    self:force_disconnect(self.d_force.cn,self.d_force.reasson,self.d_force.message)
+                    return PLUGIN_BLOC
+                else
+                    if self.parent.cnf.cn.rename_admin_say then self.parent.say:me(cn, string.format(self.parent.cnf.say.text.admin_rename_message, c_name..name)) end
+                        setrole(cn,self:get_role('DEFAULT'))
+                        if self.parent.cnf.cn.admin_role_change_say then self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.admin_role_change_admin_message_0,c_name..name)) end
+                        self.data[dcn].role = self:get_role('DEFAULT')
+                    
+                    if self.parent.flag.C_LOG then
+                        for _,v in ipairs(self.parent.cn.data) do
+                            self.parent.log:i(string.format('Player cn = %s Admin status = %s Referee status = %s',tostring(v.cn),tostring(self:chk_admin(v.cn)),tostring(self:chk_referee(v.cn))),v.cn)
+                        end
+                    end
+                    return PLUGIN_BLOC
+                end
+            else
+                if new_role == self:get_role('ADMIN') then
+                    self.data[dcn].role = self:get_role('ADMIN')
+                    if self.parent.cnf.cn.admin_role_change_say then self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.admin_role_change_admin_message_1,c_name..name)) end
+                    self.parent.log:i('Role change ADMIN: '..tostring(self.data[dcn].role),cn)
+                else
+                    self.data[dcn].role = self:get_role('DEFAULT')
+                    if self.parent.cnf.cn.admin_role_change_say then self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.admin_role_change_admin_message_0,c_name..name)) end
+                     self.parent.log:i('Role change DEFAULT: '..tostring(self.data[dcn].role),cn)
+                end
+                if self.parent.flag.C_LOG then
+                    for _,v in ipairs(self.parent.cn.data) do
+                        self.parent.log:i(string.format('Player cn = %s Admin status = %s Referee status = %s',tostring(v.cn),tostring(self:chk_admin(v.cn)),tostring(self:chk_referee(v.cn))),v.cn)
+                    end
+                end
+            end
+        end
+        self.parent.log:i('Role change OK',cn)
         return true
     end,
 

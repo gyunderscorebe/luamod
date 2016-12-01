@@ -34,6 +34,7 @@ end
 sdbs.fn:load('say')
 sdbs.fn:load('gm','game')
 sdbs.fn:load('cn')
+sdbs.fn:load('cmd')
 
 if sdbs.cnf.geo.active then
     if sdbs.cnf.geo.country then

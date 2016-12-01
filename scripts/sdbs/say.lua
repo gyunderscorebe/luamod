@@ -2,6 +2,7 @@ return {
 
 
     out = function(self,cn,text,excn)
+        local text = string.format('%s%s',self.parent.cnf.say.text.color,text)
         clientprint(cn,text,excn)
     end,
 

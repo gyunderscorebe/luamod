@@ -3,6 +3,8 @@
 return {
 
     c_log = true,
+    disable_log_chk_mtr_autoteam = false,
+
     show_mod = true,
 
     geo = {
@@ -34,6 +36,9 @@ return {
             load_map = "\n\f2Installed \fP%s \f2playground. %s%s%s",
             welcome_name_map = '\n\f0You are to \fP%s \f2map. ',
 
+            flag_drop = "\fPPlayer \f3%s \fPflag dropped",
+            flag_lost = "\fPPlayer loses \f3%s \fPflag",
+
             iso = '%s \f5%s\f2, ',
             country = '%s \f0%s\f2, ',
             city = '%s \fP%s\f2, ',
@@ -45,11 +50,19 @@ return {
             disconnect_all = "%s \f2HAS LEFT THE SERVER !!!",
             disconnect_reasson = '\f1Reason for leaving: \f3%s\f1.',
 
+            auto_kick_name_message = '\f1Name \f3%s \f1component contains prohibited on this site. It is prohibited by the rules.',
 
-            flag_drop = "\fPPlayer \f3%s \fPflag dropped",
-            flag_lost = "\fPPlayer loses \f3%s \fPflag",
+            rename_message = "\f3!!! \f2Player name changes to %s \f3%s",
+            not_rename_message = "\f2Player %s \f2tried to change the name on the \f3%s\f2. It is prohibited by the rules.",
 
-            auto_kick_name = 'Name %s component contains prohibited on this site. It is prohibited by the rules.',
+            name_same_message = '\f3%s \fP- this name is already used by a player, present here. It is prohibited by the rules.',
+            name_old_same_message = '\f3%s \fP- this name is already used by players who are here. It is prohibited by the rules.',
+
+            admin_rename_message = "Player \f3%s \f2tried to become an administrator. Follow the rules, too use role.",
+            admin_rename_kick_message = "\f9Administrator can not change the name \f3!!! \f9It is prohibited by the rules.",
+
+            admin_role_change_admin_message_1 = "%s \f2has become the administrator of the game. \f3!!!",
+            admin_role_change_admin_message_0 = "%s \f2administrator has become a regular player. \f3!!!",
         }
     },
 
@@ -90,11 +103,11 @@ return {
             -- Сказать какой режим карты
             load_map_mode = true,
             --сказать о состоянии autoteam когда карта загружена
-            autoteam = true,
+            autoteam = false,
             -- Сказать правила игры при загрузке карты
             rules_map = true,
             -- Сказать правила игры при загрузке обычной карты
-            rules_map_normal = true,
+            rules_map_normal = false,
             -- Сказать правила игры при загрузке карты GEMA
             rules_map_gema = true
         },
@@ -124,14 +137,16 @@ return {
         auto_kick_name_say = true,
         -- лист запрещенных составляющих имени
         auto_kick_name_list = {
-           'idioto', 'unarm', 'bich', 'stef', 'troll', 'tm'
+           'idiot', 'unarm', 'bich', 'stef', 'trol', 'tm'
         },
+
         -- использовать расщирение имени когда он что то сообщает кому то или всем
         connect_set_cn_name = true,
         -- format имени игрока когда он что то сообщает кому то или всем
         connect_set_cn_name_format = '(%g) %s: ',
         -- у каждого игрока свой цвет имени на весь connect
         connect_set_color_name = true,
+        -- говорить о бо мне если что
         connect_say = true,
         -- поприветствовать меня
         connect_say_me = true,    
@@ -146,22 +161,60 @@ return {
         -- Сказать правила игры при загрузке карты GEMA
         connect_say_rules_map_gema = true,
         -- Сказать правила игры при загрузке обычной карты
-        connect_say_rules_map_normal = true,
+        connect_say_rules_map_normal = false,
         -- Сказать какая карта загружена
         connect_say_load_map = true,
         -- Сказать что это карта гема
         connect_say_load_map_gema = true,
         --сказать о состоянии autoteam когда карта загружена
-        connect_say_autoteam = true,
+        connect_say_autoteam = false,
         -- Сказать какой режим карты
         connect_say_load_map_mode =true,
-        
+
+        -- задержка вывода сообщений при коннекте
+        connect_posts_delay = true,
+        connect_posts_delay_time  = 1000,
+
         -- сказать всем чтоя ухожу
         disconnect_say = true,
         -- сказать код выхода
-        say_disconnect_reasson = true,
+        disconnect_reasson_say = true,
         -- сказать причину выхода если есть
-        disconnect_say_message = true
+        disconnect_say_message = true,
+
+        -- разрешить периименование
+        rename = true,
+        -- сообщить об этом всем
+        rename_say = true,
+        -- сказать всем что запрещено переименование
+        not_rename_say = true,
+
+        -- запретить или разрешить переименование админу если он в этой роли
+        rename_admin = false,
+        -- сказать всем что что админ нарушил правила но не выкидывая его
+        rename_admin_say = true,
+        -- выкинуть админа при перименовании если он в роли
+        rename_admin_kick = true,
+        -- сказать об этом всем что его выкинули
+        rename_admin_kick_say = true,
+
+        -- следить за сменой имени админа, пока он админ и убрать привилегию
+        rename_chk_admin = true,
+        -- сообщить что ты не можеш сменить роль, т.к. нарушил правила
+        rename_chk_admin_say = true,
+
+        -- сказать всем что админ сменил роль
+        admin_role_change_say = true,
+
+        --разрешить одинаковые имена
+        name_same = false,
+        -- сказать что обнапужены и будут наказаны
+        name_same_say = true,
+        --разрешить одинаковые имена уже бывшие во время игры у присутствующих игроков
+        name_old_same = false,
+        -- сказать всем про это
+        name_old_same_say = true
+
     }
   
 }

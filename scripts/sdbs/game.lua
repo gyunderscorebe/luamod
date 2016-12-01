@@ -25,10 +25,11 @@ return {
             end
             return nil
         end,
-        flag_action =  function(self,cn,action,flag)
+
+        on_flag_action =  function(self,cn,action,flag)
             if self.parent.parent.cn:chk_cn(cn) then
-                local c_name = self.parent.parent.cn.data[self.data_cn[cn]].c_name
-                local name = self.parent.parent.cn.data[self.data_cn[cn]].name
+                local c_name = self.parent.parent.cn.data[self.parent.parent.cn.data_cn[cn]].c_name
+                local name = self.parent.parent.cn.data[self.parent.parent.cn.data_cn[cn]].name
                 self.fa = {
                     [FA_DROP] = function(self,cn,action,flag)
                         if self.parent.parent.cnf.flag.reset.drop then flagaction(cn,FA_RESET,flag) end
@@ -47,6 +48,7 @@ return {
             end
         end
     },
+
     -- MODE
     mode = {
         -- GM_DEMO - -1,GM_TDM - 0,GM_COOP - 1,GM_DM - 2,
@@ -135,8 +137,10 @@ return {
         end,
 
         set_auto_team = function(self,name,mode)
-            self.parent.parent.log:w('Map: name '..self.name..' mode  '..self.mode_str..' is gema '..tostring(self.mode_gema)..' preset autoteam '..tostring(getautoteam()) )
-            
+            if #self.parent.parent.cn.data == 0 then
+                tmr.remove(TMR_CHK_AUTOTEAM)
+                self.tmr_chk_autoteam = false
+            end
             if self.parent.parent.cnf.map.team.auto.map and self.parent.parent.cnf.map.team.mode[self.mode_str] ~= nil and self.parent.parent.cnf.map.team.mode[self.mode_str] == true then
                 if  self:is_gema_map() then
                     if getautoteam() ~=  self.parent.parent.cnf.map.team.auto.gema then 
@@ -153,30 +157,38 @@ return {
                 --if getautoteam() then setautoteam(false) end
             end
 
-            self.parent.parent.log:w("Map postset autoteam "..tostring(getautoteam()))
+            -- проверка мтр аутотеам
+            if not self.parent.paren.cnf.disable_log_chk_mtr_autoteam_ then self.parent.parent.log:w("Map tmr chk autoteam ... ") end
         end,
 
         on_map_change = function(self,name,mode)
-
+            
             tmr_chk_autoteam = function()
                 sdbs.gm.map.set_auto_team(sdbs.gm.map)
             end
 
             self:set_info(name, mode)
+            self.parent.parent.log:w('Map: name '..self.name..' mode  '..self.mode_str..' is gema '..tostring(self.mode_gema)..' preset autoteam '..tostring(getautoteam()) )
             self:set_auto_team(name, mode)
-            if self.parent.parent.cnf.map.team.auto.chk_tmr then
-                if self.tmr_chk_autoteam then tmr.remove(TMR_CHK_AUTOTEAM) end
-                self.tmr_chk_autoteam = tmr.create(TMR_CHK_AUTOTEAM,self.parent.parent.cnf.map.team.auto.chk_tmr_time,'tmr_chk_autoteam')
-                self.tmr_chk_autoteam = true
-            end
             sdbs.gm.map:say(name, mode)
+            self.parent.parent.log:w("Map postset autoteam "..tostring(getautoteam()))
 
+            if self.parent.parent.cnf.map.team.auto.chk_tmr then
+                if self.tmr_chk_autoteam then
+                    tmr.remove(TMR_CHK_AUTOTEAM)
+                    self.parent.parent.log:w("Map tmr chk autoteam STOP")
+                end
+                tmr.create(TMR_CHK_AUTOTEAM,self.parent.parent.cnf.map.team.auto.chk_tmr_time,'tmr_chk_autoteam')
+                self.tmr_chk_autoteam = true
+                self.parent.parent.log:w("Map tmr chk autoteam START autoteam: ")
+            end
         end,
 
-        on_map_end = function()
+        on_map_end = function(self)
             if self.tmr_chk_autoteam then
                 tmr.remove(TMR_CHK_AUTOTEAM)
                 self.tmr_chk_autoteam = false
+                self.parent.parent.log:w("Map tmr chk autoteam STOP")
             end
         end,
 
