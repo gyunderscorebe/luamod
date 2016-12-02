@@ -7,12 +7,13 @@ return {
 
     show_mod = true,
 
-    mysql = {
-
+    sql = {
+        flag =true,
+        driver = 'luasql.mysql',
         db_name = 'sdbs_luamod',
         user = 'sdbs_luamod',
         pwd = 'sdbs_luamod',
-        host = '127.0.0.1'
+        host = 'localhost'
     },
 
     geo = {

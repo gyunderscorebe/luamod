@@ -51,10 +51,7 @@ end
 
 require('handlers')
 
-sdbs.sql={}
-sdbs.sql.driver = require "luasql.mysql"
-sdbs.sql.handle = assert(sdbs.sql.driver.mysql())
-sdbs.sql.db = assert(sdbs.sql.handle:connect(sdbs.cnf.mysql.db_name,sdbs.cnf.mysql.user,sdbs.cnf.mysql.pwd,sdbs.cnf.mysql.host))
+sdbs.fn:load('sql')
 
 function onInit()
     setautoteam(false)

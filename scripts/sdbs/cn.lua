@@ -61,10 +61,12 @@ return {
             --clientroles
         [CR_ADMIN] = ADMIN,
         [CR_DEFAULT] = DEFAULT,
-        [100] = REFEREE,
-        REFEREE = 100,
+        [CR_REFEREE] = REFEREE,
+        [CR_REGISTERED] = REGISTERED,
         ADMIN = CR_ADMIN,
-        DEFAULT = CR_DEFAULT
+        DEFAULT = CR_DEFAULT,
+        REFEREE = CR_REFERE,
+        REGISTERED = CR_REGISTERED,
     },
     get_role = function(self,role)
         if self.roles[role] ~= nil then
