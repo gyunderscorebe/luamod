@@ -7,6 +7,14 @@ return {
 
     show_mod = true,
 
+    mysql = {
+
+        db_name = 'sdbs_luamod',
+        user = 'sdbs_luamod',
+        pwd = 'sdbs_luamod',
+        host = '127.0.0.1'
+    },
+
     geo = {
         -- активировать загрузку баз
         active = true,
@@ -145,12 +153,13 @@ return {
         -- format имени игрока когда он что то сообщает кому то или всем
         connect_set_cn_name_format = '(%g) %s: ',
         -- у каждого игрока свой цвет имени на весь connect
-        connect_set_color_name = true,
+        connect_set_color_name = false,
+        connect_set_colorize_char_name = true,
         -- говорить о бо мне если что
         connect_say = true,
         -- поприветствовать меня
-        connect_say_me = true,    
-        -- сказать всем что я зашел    
+        connect_say_me = true,
+        -- сказать всем что я зашел
         connect_say_all = true,
         -- сказать мне абоут
         connect_say_about = true,
@@ -216,5 +225,5 @@ return {
         name_old_same_say = true
 
     }
-  
+
 }

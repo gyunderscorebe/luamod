@@ -1,0 +1,3 @@
+local driver = require "luasql.mysql"
+local env = assert(driver.mysql())
+local con = assert(env:connect("test_db","tests","tests","localhost"))

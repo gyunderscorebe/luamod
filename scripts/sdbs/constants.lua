@@ -20,7 +20,7 @@ LOG_WARN = 3
 LOG_ERR = 4
 
 -- say messages
--- 0  green, 1 blue, 2 yellow, 3 red, 4 gray, 5 white, 9 orange, 
+-- 0  green, 1 blue, 2 yellow, 3 red, 4 gray, 5 white, 9 orange,
 SAY_TEXT = '\f2'
 SAY_NORMAL = '\f0'
 SAY_INFO = '\f1'
@@ -30,7 +30,7 @@ SAY_SYS = '\f5'
 SAY_GRAY = '\f4'
 SAY_LIGHTGRAY = '\fY'
 SAY_DARKGRAY = '\fZ'
-SAY_MAGENTA = '\fX'            
+SAY_MAGENTA = '\fX'
 SAY_ENABLED_0 = '\f0ENABLED '
 SAY_ENABLED_3 = '\f3ENABLED '
 SAY_DISABLED_0 = '\f0DISABLED '

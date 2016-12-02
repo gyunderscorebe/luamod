@@ -153,7 +153,7 @@ return {
     chk_same_and_old_same_name = function (self,cn,name)
         if #self.data > 0 and ( not self.parent.cnf.cn.name_same or not self.parent.cnf.cn.name_old_same ) then
             --self.parent.log:w("Name search ")
-            local name = name:lower() 
+            local name = name:lower()
             for k,v in ipairs(self.data) do
                 if cn ~= v.cn and k == v.dcn then
                     if not self.parent.cnf.cn.name_same then
@@ -169,7 +169,7 @@ return {
                         end
                     end
                     if not self.parent.cnf.cn.name_old_same then
-                        if #v.oldname > 0 then 
+                        if #v.oldname > 0 then
                             for _,vv in ipairs(v.oldname) do
                                 -- self.parent.log:w("Oldname search "..vv..' name '..v.name,cn)
                                 if vv:lower() == name then
@@ -200,13 +200,13 @@ return {
         if isconnected(cn) then
             local name = getname(cn)
             self.parent.log:i('Preconnect OK',cn)
-            if self:auto_kick_name(cn,name) then              
+            if self:auto_kick_name(cn,name) then
                 return  PLUGIN_BLOCK
             end
             if self:chk_same_and_old_same_name(cn,name) then
                 return  PLUGIN_BLOCK
             end
-        else 
+        else
             sdbs.log:i('Preconnect NO', cn)
             --return PLUGIN_BLOCK
             return
@@ -251,7 +251,7 @@ return {
             local c_name = self.data[dcn].c_name
 
             if self.parent.cnf.geo.active then
-                if self.parent.cnf.geo.country then 
+                if self.parent.cnf.geo.country then
                     self.data[dcn].country = geoip.ip_to_country(ip)
                     if self.data[dcn].country == 'unknown' then self.data[dcn].country = 'Country' end
                     self.data[dcn].iso = geoip.ip_to_country_code(ip)
@@ -261,7 +261,7 @@ return {
                     end
                     if self.parent.cnf.geo.country_say then
                         self.data[dcn].geo = string.format(self.parent.cnf.say.text.country, self.data[dcn].geo,self.data[dcn].country)
-                    end  
+                    end
                 end
                 if self.parent.cnf.geo.city then
                     self.data[dcn].city = geoip.ip_to_city(ip)
@@ -294,12 +294,12 @@ return {
                 if self.parent.cnf.cn.connect_say_me then
 
                     local key_about, map, gema, mode, autoteam  = '', '', '','',''
-                    
+
                     if self.parent.cnf.cn.connect_say_load_map then
 
                         map =string.format(self.parent.cnf.say.text.welcome_name_map, self.parent.gm.map.name)
 
-                        if self.parent.cnf.cn.connect_say_load_map_gema and self.parent.gm.map:is_gema_map() then 
+                        if self.parent.cnf.cn.connect_say_load_map_gema and self.parent.gm.map:is_gema_map() then
                             gema = self.parent.cnf.say.text.atention_gema
                         end
 
@@ -350,17 +350,17 @@ return {
 
                     if self.parent.cnf.cn.connect_posts_delay then
                         tmr.create(1,self.parent.cnf.cn.connect_posts_delay_time,'tmr_connect_say')
-                    else  
+                    else
                         tmr_connect_say()
                     end
 
                 end
             end
-            
+
             self.parent.log:i('AddCn OK',cn)
             -- if self.parent.flag.C_LOG then self:get_chk_data_cn() end
             return true
-        else 
+        else
             self.parent.log:i('Not add data cn, cn ~= nil AddCn NO',cn)
             return false
         end
@@ -392,7 +392,7 @@ return {
             disconnect(cn,reasson)
             delclient(cn)
             --reloadas(cn)
-            return true 
+            return true
         end
         return false
         -- PLUGIN_BLOCK
@@ -417,7 +417,7 @@ return {
                 end
             end
             self.parent.log:i('RemoveCn OK',cn)
-        else 
+        else
             self.parent.log:i('Not is CN for remove data cn. RemoveCn NO',cn)
         end
     end,
@@ -442,10 +442,10 @@ return {
                 end
 
                 if self.parent.cnf.cn.disconnect_say_message then
-                    if self.d_force.message ~= nil then 
+                    if self.d_force.message ~= nil then
                         --sayas(self.d_force.message,cn)
                         say_disconnect = string.format('%s \n%s',say_disconnect ,self.d_force.message)
-                    end                    
+                    end
                 end
 
                 self.parent.say:all(say_disconnect)
@@ -489,7 +489,7 @@ return {
             local dcn = self.data_cn[cn]
             local c_name = self.data[dcn].c_name
             self.parent.log:i('Check rename...',cn)
-            
+
             if self:auto_kick_name(cn,newname) then
                 self:force_disconnect(self.d_force.cn,self.d_force.reasson,self.d_force.message)
                 return--PLUGIN_BLOCK
@@ -501,11 +501,11 @@ return {
                 setrole(cn,self:get_role('DEFAULT'), false)
                 callhandler('onPlayerRoleChange',cn, self:get_role('DEFAULT'))
             end
-            
+
             if not self.parent.cnf.cn.rename then
                 self.parent.log:i('Check rename. KICK OK',cn)
                 self.d_force.cn = cn
-                self.d_force.reasson = self:get_d_reasson('AUTOKICK')                
+                self.d_force.reasson = self:get_d_reasson('AUTOKICK')
                 if self.parent.cnf.cn.not_rename_say then
                     self.d_force.message = string.format(self.parent.cnf.say.text.not_rename_message,c_name..self.data[dcn].name,newname)
                 end
@@ -530,7 +530,7 @@ return {
             self.data[dcn].count_rename = self.data[dcn].count_rename + 1
             self.parent.log:w("Rename: ".. self.data[dcn].name..' to '..newname..' Count rename: '..self.data[dcn].count_rename.." Count OldName: "..self.data[dcn].count_old_name,cn)
             if self.parent.cnf.cn.rename_say then
-                self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.rename_message,c_name..self.data[dcn].name,c_name..newname)) 
+                self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.rename_message,c_name..self.data[dcn].name,c_name..newname))
             end
             self.data[dcn].name = newname
             self.parent.log:i('Rename OK',cn)
@@ -559,7 +559,7 @@ return {
                         setrole(cn,self:get_role('DEFAULT'))
                         if self.parent.cnf.cn.admin_role_change_say then self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.admin_role_change_admin_message_0,c_name..name)) end
                         self.data[dcn].role = self:get_role('DEFAULT')
-                    
+
                     if self.parent.flag.C_LOG then
                         for _,v in ipairs(self.parent.cn.data) do
                             self.parent.log:i(string.format('Player cn = %s Admin status = %s Referee status = %s',tostring(v.cn),tostring(self:chk_admin(v.cn)),tostring(self:chk_referee(v.cn))),v.cn)

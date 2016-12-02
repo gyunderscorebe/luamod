@@ -5,10 +5,12 @@ PLUGIN_VERSION = "1.0.5"
 -- reload lua as admin:  /serverextention lua::reload --
 
 sdbs = {
-    path = "lua/scripts/sdbs/"
+    path = "lua/scripts/sdbs/",
+    cpath = "lua/extra/"
 }
 
 package.path = sdbs.path.."?.lua;"
+package.cpath = sdbs.cpath.."?.so;"
 
 -- Пишет в stdout, для отладки токо
 sdbs.flag = {
@@ -48,6 +50,11 @@ if sdbs.cnf.geo.active then
 end
 
 require('handlers')
+
+sdbs.sql={}
+sdbs.sql.driver = require "luasql.mysql"
+sdbs.sql.handle = assert(sdbs.sql.driver.mysql())
+sdbs.sql.db = assert(sdbs.sql.handle:connect(sdbs.cnf.mysql.db_name,sdbs.cnf.mysql.user,sdbs.cnf.mysql.pwd,sdbs.cnf.mysql.host))
 
 function onInit()
     setautoteam(false)

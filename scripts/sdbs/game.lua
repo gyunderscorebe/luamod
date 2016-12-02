@@ -76,7 +76,7 @@ return {
             DEMO = GM_DEMO,     -- -1
             TDM = GM_TDM,       --0
             COOP = GM_COOP,     --1
-            DM= GM_DM,          --2
+            DM = GM_DM,         --2
             SURV = GM_SURV,     --3
             TSURV = GM_TSURV,   --4
             CTF = GM_CTF,       --5
@@ -104,7 +104,7 @@ return {
         mode_str = nil,
         tmr_chk_autoteam = false,
         chk_gema_map = function (self, mapname)
-            mapname = mapname:lower()        
+            mapname = mapname:lower()
             for _,v in ipairs(self.parent.parent.cnf.map.list.implicit) do
                 if mapname:find(v) then
                     return true
@@ -125,6 +125,7 @@ return {
             end
             return false
         end,
+
         is_gema_map = function(self)
             return self.mode_gema
         end,
@@ -143,12 +144,12 @@ return {
             end
             if self.parent.parent.cnf.map.team.auto.map and self.parent.parent.cnf.map.team.mode[self.mode_str] ~= nil and self.parent.parent.cnf.map.team.mode[self.mode_str] == true then
                 if  self:is_gema_map() then
-                    if getautoteam() ~=  self.parent.parent.cnf.map.team.auto.gema then 
+                    if getautoteam() ~=  self.parent.parent.cnf.map.team.auto.gema then
                         setautoteam(self.parent.parent.cnf.map.team.auto.gema)
                         self.parent.parent.log:w("Map SET autoteam "..tostring(getautoteam()))
                     end
                 else
-                    if getautoteam() ~=  self.parent.parent.cnf.map.team.auto.map then 
+                    if getautoteam() ~=  self.parent.parent.cnf.map.team.auto.map then
                         setautoteam(self.parent.parent.cnf.map.team.auto.map)
                         self.parent.parent.log:w("Map SET autoteam "..tostring(getautoteam()))
                     end
@@ -158,11 +159,11 @@ return {
             end
 
             -- проверка мтр аутотеам
-            if not self.parent.paren.cnf.disable_log_chk_mtr_autoteam_ then self.parent.parent.log:w("Map tmr chk autoteam ... ") end
+            if not self.parent.parent.cnf.disable_log_chk_mtr_autoteam_ then self.parent.parent.log:w("Map tmr chk autoteam ... ") end
         end,
 
         on_map_change = function(self,name,mode)
-            
+
             tmr_chk_autoteam = function()
                 sdbs.gm.map.set_auto_team(sdbs.gm.map)
             end
@@ -194,11 +195,11 @@ return {
 
         say = function (self,name,mode)
             if self.parent.parent.cnf.map.say.load_map then
-                
+
                 self.parent.parent.log:i('Changed map '..name..' mode', mode)
-                
+
                 local gema, mode, autoteam  = '', '',''
-                
+
                 if self.parent.parent.cnf.map.say.rules_map then
                     if self:is_gema_map() and self.parent.parent.cnf.map.say.rules_map_gema then
                         self.parent.parent.say:all(self.parent.parent.cnf.say.text.rules_map_gema)
@@ -207,14 +208,14 @@ return {
                     end
                 end
 
-                if self:is_gema_map() then 
+                if self:is_gema_map() then
                     if self.parent.parent.cnf.map.say.load_map_gema then gema = self.parent.parent.cnf.say.text.atention_gema end
                 end
 
                 if self.parent.parent.cnf.map.say.load_map_mode then
                     mode = string.format(self.parent.parent.cnf.say.text.game_mode, self.mode_str)
                 end
-                
+
                 if self.parent.parent.cnf.map.say.autoteam  then
                     if getautoteam() then
                         if self:is_gema_map() then
@@ -298,7 +299,7 @@ return {
             STOPDEMO = SA_STOPDEMO ,         --9
             CLEARDEMOS = SA_CLEARDEMOS,     --10
             SERVERDESC = SA_SERVERDESC,     --11
-            SHUFFLETEAMS = SA_SHUFFLETEAMS  --12  
+            SHUFFLETEAMS = SA_SHUFFLETEAMS  --12
         },
         get_vote = function(self,vote)
             local v = vote or nil
