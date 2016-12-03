@@ -132,13 +132,17 @@ return {
         return C_CN_CODES[math.random(1, #C_CN_CODES)]
     end,
 
+    colorize_text = function(self,text)
+        return string.gsub(text,"\\f","\f")
+    end,
+--[[
     colorize_text = function (self,text)
       for i = 1, #C_CODES do
         text = text:gsub(CC_LOOKUP[i], C_CODES[i])
       end
       return text
     end,
-
+]]
     -- ( string name, string path )
     load = function(self,name,path)
         path = path or name

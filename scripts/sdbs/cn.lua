@@ -61,10 +61,12 @@ return {
             --clientroles
         [CR_ADMIN] = ADMIN,
         [CR_DEFAULT] = DEFAULT,
+        [CR_ROOT] = ROOT,
         [CR_REFEREE] = REFEREE,
         [CR_REGISTERED] = REGISTERED,
         ADMIN = CR_ADMIN,
         DEFAULT = CR_DEFAULT,
+        ROOT = CR_ROOT,
         REFEREE = CR_REFERE,
         REGISTERED = CR_REGISTERED,
     },
@@ -86,15 +88,23 @@ return {
         return false
     end,
     chk_admin = function(self,cn)
-        if self:chk_cn(cn) and ( self.data[self.data_cn[cn]].role == self:get_role(ADMIN) and isadmin(cn) ) then return true end
+        if self:chk_cn(cn) and ( self.data[self.data_cn[cn]].role == self:get_role(ADMIN) ) then return true end
+        return false
+    end,
+    chk_registered = function(self,cn)
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].registered == self:get_role(REGISTERED) then return true end
         return false
     end,
     chk_referee = function(self,cn)
         if self:chk_cn(cn) and self.data[self.data_cn[cn]].referee == self:get_role(REFEREE) then return true end
         return false
     end,
-    chk_role = function(self,cn)
-        if self:chk_cn(cn) and ( self.data[self.data_cn[cn]].referee == self:get_role(REFEREE) or ( self.data[self.data_cn[cn]].role == self:get_role(ADMIN) and isadmin(cn) ) )then return true end
+    chk_root = function(self,cn)
+        if self:chk_cn(cn) and self.data[self.data_cn[cn]].root == self:get_role(ROOT) then return true end
+        return false
+    end,
+    chk_root_role = function(self,cn)
+        if self:chk_cn(cn) and ( ( self.data[self.data_cn[cn]].root == self:get_role(ROOT) ) or self.data[self.data_cn[cn]].referee == self:get_role(REFEREE) or ( self.data[self.data_cn[cn]].role == self:get_role(ADMIN) and isadmin(cn) ) ) then return true end
         return false
     end,
     chk_cn_show_mod = function(self,cn)
@@ -113,25 +123,26 @@ return {
         for _,v in ipairs(self.data) do
             if self:chk_admin(v.cn) then return v.cn end
         end
-        return false
+        return nil
     end,
     get_chk_data_cn = function(self,cn)
         if self:chk_cn(cn)  then
             self.parent.log:i('get_chk_data_cn',cn)
-            self.parent.log:i('TABLE DATA_CN - CN: '..cn..' DCN: '..self.data_cn[cn]..' TABLE DATA - Name: '..self.data[self.data_cn[cn]].name..' CN: '..self.data[self.data_cn[cn]].cn..' DCN: '..self.data[self.data_cn[cn]].dcn..' Role: '..tostring(self.data[self.data_cn[cn]].role)..' Refere: '..tostring(self.data[self.data_cn[cn]].referee)..' Show_gema: '..tostring(self.data[self.data_cn[cn]].show_gema) )
+            self.parent.log:i('TABLE DATA_CN - CN: '..cn..' DCN: '..self.data_cn[cn]..' TABLE DATA - Name: '..self.data[self.data_cn[cn]].name..' CN: '..self.data[self.data_cn[cn]].cn..' DCN: '..self.data[self.data_cn[cn]].dcn..' Role: '..tostring(self.data[self.data_cn[cn]].role)..' ROOT: '..tostring(self.data[self.data_cn[cn]].root)..' Refere: '..tostring(self.data[self.data_cn[cn]].referee)..' Registered: '..tostring(self.data[self.data_cn[cn]].registered)..' show_mod: '..tostring(self.data[self.data_cn[cn]].show_mod) )
         else
             self.parent.log:i('get_chk_data_cn in DATA',cn)
             for _,v in pairs(self.data) do
-                self.parent.log:i('TABLE DATA_CN - CN: '..v.cn..' DCN: '..self.data_cn[v.cn]..' TABLE DATA - Name: '..v.name..' CN: '..v.cn..' DCN: '..v.dcn..' Role: '..tostring(v.role)..' Refere: '..tostring(v.referee)..' Show_gema: '..tostring(v.show_gema))
+                self.parent.log:i('TABLE DATA_CN - CN: '..v.cn..' DCN: '..self.data_cn[v.cn]..' TABLE DATA - Name: '..v.name..' CN: '..v.cn..' DCN: '..v.dcn..' Role: '..tostring(v.role)..' ROOT: '..tostring(v.root)..' Refere: '..tostring(v.referee)..' Registered: '..tostring(v.registered)..' show_mod: '..tostring(v.show_mod))
             end
             self.parent.log:i('get_chk_data_cn in DATA_CN',cn)
             for i = 0, maxclient() -1 do
                 if self.data_cn[i] ~= nil then
-                    self.parent.log:i(' TABLE DATA_CN - CN: '..i..' DCN: '..self.data_cn[i]..' TABLE DATA - Name: '..self.data[self.data_cn[i]].name..' CN: '..self.data[self.data_cn[i]].cn..' DCN: '..self.data[self.data_cn[i]].dcn..' Role: '..tostring(self.data[self.data_cn[i]].role)..' Refere: '..tostring(self.data[self.data_cn[i]].referee)..' Show_gema: '..tostring(self.data[self.data_cn[i]].show_gema))
+                    self.parent.log:i(' TABLE DATA_CN - CN: '..i..' DCN: '..self.data_cn[i]..' TABLE DATA - Name: '..self.data[self.data_cn[i]].name..' CN: '..self.data[self.data_cn[i]].cn..' DCN: '..self.data[self.data_cn[i]].dcn..' Role: '..tostring(self.data[self.data_cn[i]].role)..' ROOT: '..tostring(self.data[self.data_cn[i]].root)..' Refere: '..tostring(self.data[self.data_cn[i]].referee)..' Registered: '..tostring(self.data[self.data_cn[i]].registered)..' show_mod: '..tostring(self.data[self.data_cn[i]].show_mod))
                 end
             end
         end
     end,
+
     auto_kick_name = function(self,cn,name)
         sdbs.log:i('Check kick_name_list', cn)
         local lname = name:lower()
@@ -155,12 +166,12 @@ return {
     chk_same_and_old_same_name = function (self,cn,name)
         if #self.data > 0 and ( not self.parent.cnf.cn.name_same or not self.parent.cnf.cn.name_old_same ) then
             --self.parent.log:w("Name search ")
-            local name = name:lower()
+            local lname = name:lower()
             for k,v in ipairs(self.data) do
                 if cn ~= v.cn and k == v.dcn then
                     if not self.parent.cnf.cn.name_same then
                         --self.parent.log:w("Name search ".. v.name)
-                        if v.name:lower() == name then
+                        if v.name:lower() == lname then
                             self.parent.log:w(string.format("Find name: %s in name list players = true",name),cn)
                             self.d_force.cn = cn
                             self.d_force.reasson = self:get_d_reasson('DUP')
@@ -174,7 +185,7 @@ return {
                         if #v.oldname > 0 then
                             for _,vv in ipairs(v.oldname) do
                                 -- self.parent.log:w("Oldname search "..vv..' name '..v.name,cn)
-                                if vv:lower() == name then
+                                if vv:lower() == lname then
                                     self.parent.log:w(string.format("Find name: %s in old name list players = true",name),cn)
                                     self.d_force.n = cn
                                     self.d_force.reasson = self:get_d_reasson('DUP')
@@ -235,16 +246,24 @@ return {
                 city = nil,
                 geo = '',
                 role = nil,
+                root = nil,
                 referee = nil,
+                registerd = nil,
                 registered = nil,
-                show_gema = false
+                show_mod = false,
+                tmr_connect_say = nil
             })
 
             local dcn = #self.data
             self.data_cn[cn] = dcn
             self.data[dcn].dcn = dcn
-            if isadmin(cn) then self.data[dcn].role = self:get_role(ADMIN) else self.data[dcn].role = self:get_role(DEFAULT) end
+            if isadmin(cn) then
+                self.data[dcn].role = self:get_role(ADMIN)
+                self.data[dcn].show_mod = true
+            else self.data[dcn].role = self:get_role(DEFAULT) end
+            self.data[dcn].root = self:get_role(DEFAULT)
             self.data[dcn].referee = self:get_role(DEFAULT)
+            self.data[dcn].registered = self:get_role(DEFAULT)
 
             if self.parent.cnf.cn.connect_set_color_name then
                 self.data[dcn].c_name = self.parent.fn:random_color_cn()
@@ -281,14 +300,17 @@ return {
                 if self.parent.cnf.cn.connect_say_all then
                     for _,v in ipairs(self.data) do
                         if v.cn ~= cn and isconnected(v.cn) then
-                            if self:chk_role(v.cn) then
+                            local show_mod = v.show_mod
+                            v.show_mod = true
+                            if self:chk_root_role(v.cn) then
                                 --if self.parent.cnf.geo.activate and self.parent.cnf.geo.city and self.parent.cnf.geo.say_city then
                                 --        geo = string.format('%s\f9%s ',geo,self.data[dcn].city)
                                 --end
-                                self.parent.say:to(v.cn,string.format(self.parent.cnf.say.text.connect_all_chk_admin,c_name..self.data[dcn].name,self.data[dcn].geo,self.data[dcn].ip))
+                                self.parent.say:to(cn,v.cn,string.format(self.parent.cnf.say.text.connect_all_chk_admin,c_name..self.data[dcn].name,self.data[dcn].geo,self.data[dcn].ip))
                             else
-                                self.parent.say:to(v.cn,string.format(self.parent.cnf.say.text.connect_all,c_name..self.data[dcn].name,self.data[dcn].geo))
+                                self.parent.say:to(cn,v.cn,string.format(self.parent.cnf.say.text.connect_all,c_name..self.data[dcn].name,self.data[dcn].geo))
                             end
+                            v.show_mod = show_mod
                         end
                     end
                 end
@@ -329,13 +351,14 @@ return {
                     end
 
 
-                    if self.parent.cnf.cn.connect_say_about or ( self.parent.cnf.cn.connect_say_rules_map and (self.parent.cnf.cn.connect_say_rules_map_gema or self.parent.cnf.cn.connect_say_rules_map_normal) ) then
-                        key_about =  self.parent.cnf.say.text.key_about
-                    end
+                    self['tmr_connect_say_'..tostring(dcn)] = function ()
 
-                    tmr_connect_say = function ()
+                        if self.parent.cnf.cn.connect_say_about or ( self.parent.cnf.cn.connect_say_rules_map and (self.parent.cnf.cn.connect_say_rules_map_gema or self.parent.cnf.cn.connect_say_rules_map_normal) ) then
+                            key_about =  self.parent.cnf.say.text.key_about
+                        end
+
                         if self.parent.cnf.cn.connect_say_about then
-                            self.parent.say:me(cn,self.parent.cnf.say.text.about)
+                            self.parent.say:me(cn, string.format('%s%s', self.parent.cnf.say.text.about, self.parent.cnf.say.text.about_message ))
                         end
                         if self.parent.cnf.cn.connect_say_rules_map then
                             if self.parent.gm.map:is_gema_map() and self.parent.cnf.cn.connect_say_rules_map_gema then
@@ -345,15 +368,25 @@ return {
                             end
                         end
                         self.parent.say:me(cn, string.format("%s%s%s%s",map,mode,gema,autoteam))
-                        self.parent.say:me(cn, string.format("%s %s",self.parent.cnf.say.text.connect_welcome,c_name..name))
+                        local show_mod = self.data[dcn].show_mod
+                        self.data[dcn].show_mod = true
+                        self.parent.say:me(cn, string.format(self.parent.cnf.say.text.connect_welcome,c_name..name,self.data[dcn].geo))
+                        self.data[dcn].show_mod = show_mod
                         self.parent.say:me(cn, string.format("%s",key_about))
-                        tmr.remove(1)
+                        if self.data[dcn].tmr_connect_say ~= nil then
+                            tmr.remove(self.data[dcn].tmr_connect_say)
+                            self.parent.log:w('TMR REMOVE N - '..tostring(self.data[dcn].tmr_connect_say),cn)
+                            self.data[dcn].tmr_connect_say = nil
+                        end
+                        self.parent.log:w('chk TMR REMOVE N '..tostring(self.data[dcn].dcn)..' TMR = '..tostring(self.data[dcn].tmr_connect_say),cn)
                     end
 
                     if self.parent.cnf.cn.connect_posts_delay then
-                        tmr.create(1,self.parent.cnf.cn.connect_posts_delay_time,'tmr_connect_say')
+                        self.data[dcn].tmr_connect_say = dcn
+                        tmr.create(self.data[dcn].tmr_connect_say,self.parent.cnf.cn.connect_posts_delay_time,self['tmr_connect_say_'..tostring(dcn)])
+                        self.parent.log:w('TMR CREATE N - '..tostring(self.data[dcn].tmr_connect_say),cn)
                     else
-                        tmr_connect_say()
+                        self['tmr_connect_say_'..tostring(dcn)]()
                     end
 
                 end
@@ -379,12 +412,13 @@ return {
             end
             self:add_cn(cn)
             self.parent.log:i('Connect OK',cn)
+            if self.parent.flag.C_LOG then self:get_chk_data_cn() end
             return true
         else
+            if self.parent.flag.C_LOG then self:get_chk_data_cn() end
             self.parent.log:i('Connect NO',cn)
+            return false
         end
-        if self.parent.flag.C_LOG then self:get_chk_data_cn() end
-        return false
     end,
 
     force_disconnect = function(self,cn,reasson,message)
@@ -463,24 +497,10 @@ return {
             end
 
             self.parent.log:i('Disconnect OK',cn)
+            if self.parent.flag.C_LOG then self:get_chk_data_cn() end
         else
             self.parent.log:i('Disconnect NO',cn)
-        end
-        if self.parent.flag.C_LOG then self:get_chk_data_cn() end
-        return true
-    end,
-
-    on_say_text = function (self,cn,text,team,me)
-        if self.parent.cnf.show_mod then
-            local name = self.data[self.data_cn[cn]].name
-            local c_name = self.data[self.data_cn[cn]].c_name
-            text = string.format('%s%s',self.parent.cnf.say.text.color,text)
-            if self.parent.cnf.cn.connect_set_cn_name then
-                name = string.format(self.parent.cnf.cn.connect_set_cn_name_format,tostring(cn),name)
-                text = string.format('%s%s%s',c_name,name,text)
-            end
-            self.parent.say:allexme(cn,string.gsub(text,"\\f","\f"))
-            return PLUGIN_BLOCK
+            if self.parent.flag.C_LOG then self:get_chk_data_cn() end
         end
         return true
     end,
@@ -571,22 +591,87 @@ return {
                 end
             else
                 if new_role == self:get_role('ADMIN') then
+                    local admin = self:get_admin()
+                    if admin ~= nil then callhandler('onPlayerRoleChange',admin,self:get_role('DEFAULT')) end
+
                     self.data[dcn].role = self:get_role('ADMIN')
+                    if not self.data[dcn].show_mod then --and self:chk_root_role(cn) then
+                        self.data[dcn].show_mod = true
+                    end
                     if self.parent.cnf.cn.admin_role_change_say then self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.admin_role_change_admin_message_1,c_name..name)) end
                     self.parent.log:i('Role change ADMIN: '..tostring(self.data[dcn].role),cn)
                 else
                     self.data[dcn].role = self:get_role('DEFAULT')
+                    if self.data[dcn].show_mod and not self:chk_root_role(cn) then
+                        self.data[dcn].show_mod = false
+                    end
                     if self.parent.cnf.cn.admin_role_change_say then self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.admin_role_change_admin_message_0,c_name..name)) end
                      self.parent.log:i('Role change DEFAULT: '..tostring(self.data[dcn].role),cn)
                 end
                 if self.parent.flag.C_LOG then
                     for _,v in ipairs(self.parent.cn.data) do
-                        self.parent.log:i(string.format('Player cn = %s Admin status = %s Referee status = %s',tostring(v.cn),tostring(self:chk_admin(v.cn)),tostring(self:chk_referee(v.cn))),v.cn)
+                        self.parent.log:i(string.format('Player cn = %s Admin status = %s, ROOT status = %s, Referee status = %s, Registered status = %s, Show_mod status = %s',tostring(v.cn),tostring(self:chk_admin(v.cn)),tostring(self:chk_root(v.cn)),tostring(self:chk_referee(v.cn)),tostring(self:chk_registered(v.cn)),tostring(self:chk_cn_show_mod(v.cn))),v.cn)
                     end
                 end
             end
         end
         self.parent.log:i('Role change OK',cn)
+        return true
+    end,
+
+    -- CMD CHK COMMAND
+
+    on_say_text = function (self,cn,text,team,me)
+
+        if not isconnected(cn) or not self:chk_cn(cn) then  return true end
+
+        local dcn = self.data_cn[cn]
+        local name = self.data[dcn].name
+        local c_name = self.data[dcn].c_name
+
+        --local show_mod = self.data[dcn].show_mod
+        --self.data[dcn].show_mod = true
+
+        local data = self.parent.fn:split(text, " ")
+        local command, args = string.lower(data[1]), self.parent.fn:slice(data, 2)
+        local admin, root, referee, registered, name = false, false, false, false, ''
+
+        if self.parent.cmd.commands[command] ~= nil then
+
+            if string.byte(command,1) ~= string.byte("$",1) then
+                self.parent.say:me(cn,self.parent.cnf.say.text.chk_commands_fix_message)
+                return PLUGIN_BLOCK
+            end
+
+            local cmd = self.parent.cmd.commands[command]
+
+            if ( self:chk_admin(cn) and cmd.protected[1]) or ( self:chk_root(cn) and cmd.protected[2]) or ( self:chk_referee(cn) and cmd.protected[3] ) or ( self:chk_registered(cn) and cmd.protected[4] ) or cmd.protected[5] then
+                cmd:cfn(cn, args)
+                if not cmd.protected[6] then return PLUGIN_BLOCK end
+                return PLUGIN_BLOCK
+            else
+                self.parent.say:me(cn,self.parent.cnf.say.text.chk_commands_not_alloved_message)
+                return PLUGIN_BLOCK
+            end
+
+        elseif string.byte(command,1) == string.byte("$",1) then
+            self.parent.say:me(cn,self.parent.cnf.say.text.chk_commands_fix_message)
+            return PLUGIN_BLOCK
+        end
+
+        --self.data[dcn].show_mod = show_mod
+
+        if self.parent.cnf.show_mod then
+
+            text = string.format('%s%s',self.parent.cnf.say.text.color,text)
+
+            if self.parent.cnf.cn.connect_set_cn_name then
+                name = string.format(self.parent.cnf.cn.connect_set_cn_name_format,tostring(cn),name)
+                text = string.format('%s%s%s',c_name,name,text)
+            end
+            self.parent.say:allexme(cn,self.parent.cn:colorize_text(text))
+            return PLUGIN_BLOCK
+        end
         return true
     end,
 

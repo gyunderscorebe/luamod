@@ -6,11 +6,11 @@ return {
         clientprint(cn,text,excn)
     end,
 
-    to = function(self,tcn,text)
-        if self.parent.cnf.show_mod or self.parent.cn:chk_cn_show_mod(tcn) then self:out(tcn,text) end
+    to = function(self,cn,tcn,text)
+        if self.parent.cnf.show_mod or self.parent.cn:chk_cn_show_mod(cn) or self.parent.cn:chk_cn_show_mod(tcn) then self:out(tcn,text) end
     end,
     me = function(self,cn,text)
-        if self.parent.cnf.show_mod or self.parent.cn:chk_cn_show_mod(tcn) then self:out(cn,text) end
+        if self.parent.cnf.show_mod or self.parent.cn:chk_cn_show_mod(cn) then self:out(cn,text) end
     end,
     allex = function(self,excn,text)
         if self.parent.cnf.show_mod then self:out(-1,text,excn) end

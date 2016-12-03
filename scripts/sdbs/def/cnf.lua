@@ -5,7 +5,16 @@ return {
     c_log = true,
     disable_log_chk_mtr_autoteam = false,
 
-    show_mod = true,
+    show_mod = false,
+
+    sql = {
+        flag = true,
+        driver = 'luasql.mysql',
+        db_name = 'sdbs_luamod',
+        user = 'sdbs_luamod',
+        pwd = 'sdbs_luamod',
+        host = 'localhost'
+    },
 
     geo = {
         -- активировать загрузку баз
@@ -17,7 +26,7 @@ return {
         -- пути к файлам баз GeoIp
         f_country = 'geo/GeoIP.dat',
         f_city = 'geo/GeoLiteCity.dat',
-        iso_say = true,
+        iso_say = false,
         country_say = true,
         city_say = true,
     },
@@ -25,7 +34,8 @@ return {
     say = {
         text = {
             color = SAY_TEXT,
-            about = '\n\f2INFORMATION\n\t\fPSITE: \f5http://vah-clan.ga\n\t\fPEMAIL: \f5admin@vah-clan.ga\n\t\fPIRC: \f5freenode #vah\n\t\fPWIKI: \f5http://wiki.cubers.net/action/view/VAH_clan\n\t\fPFORUM: \f5http://forum.cubers.net/thread-8744.html\n\t\fPEnter \f3$help \fPto see a list of commands',
+            about = '\n\f2INFORMATION\n\t\fPSITE: \f5http://vah-clan.ga\n\t\fPEMAIL: \f5admin@vah-clan.ga\n\t\fPIRC: \f5freenode #vah\n\t\fPWIKI: \f5http://wiki.cubers.net/action/view/VAH_clan\n\t\fPFORUM: \f5http://forum.cubers.net/thread-8744.html',
+            about_message = '\n\t\fPEnter \f3$help \fPto see a list of commands',
             key_about = '\n\t\t\fPPress \f3F11 \fPto display full information about the clan. \f0$about \fPor \f0$help \fPin cmd menu.',
 
             rules_map = '\nf0RULES:',
@@ -43,7 +53,7 @@ return {
             country = '%s \f0%s\f2, ',
             city = '%s \fP%s\f2, ',
 
-            connect_welcome = "\f2FOR SERVER OF FRIENDS, WELCOME YOU ",
+            connect_welcome = "\f2FOR SERVER OF FRIENDS, WELCOME YOU %s \f2of %s",
             connect_all = "%s \f2CONNECTED FROM %s",
             connect_all_chk_admin ='%s \f2CONNECTED FROM %s \f4IP: \f3%s',
 

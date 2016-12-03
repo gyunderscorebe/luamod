@@ -24,7 +24,7 @@ sdbs.fn = require('fn')
 sdbs.fn:init(sdbs)
 sdbs.fn:load('log')
 
-local callResult, result = pcall(dofile, sdbs.path..'cnf.lua')
+local callResult, result = pcall(require, 'cnf')
 if callResult then sdbs.cnf = result sdbs.log:i('Module cnf init OK') else
     sdbs.log:w(result)
     sdbs.log:w("Restore default configuration")
@@ -57,9 +57,28 @@ function onInit()
     setautoteam(false)
     sdbs.flag.C_LOG = sdbs.cnf.c_log
     sdbs.log:w("Map autoteam is  "..tostring(getautoteam()))
+    sdbs.cnf.map.say.load_map = false
+    callhandler('onMapChange', getmapname(), getgamemode())
+    sdbs.cnf.map.say.load_map = true
+    if #sdbs.cn.data == 0 then
+        for cn = 0,  maxclient() -1 do
+            if isconnected(cn) then
+                callhandler('onPlayerPreconnect', cn)
+                callhandler('onPlayerConnect', cn)
+                sdbs.log:i('Reinit Player '..sdbs.cn.data[sdbs.cn.data_cn[cn]].name..' CN '..cn..' OK',cn)
+            end
+        end
+    end
     sdbs.log:w("Init mod "..PLUGIN_NAME..' OK')
 end
 
 function onDestroy()
+    sdbs.flag.C_LOG = true
+    if sdbs.sql.cdb then
+        sdbs.sql.db:close()
+        sdbs.sql.handle:close()
+        sdbs.sql.driver = nil
+        sdbs.log:w("Deactivate driver MYSQL "..tostring(sdbs.sql.cdb))
+    end
     sdbs.log:i("Destroy mod "..PLUGIN_NAME..' OK')
 end
