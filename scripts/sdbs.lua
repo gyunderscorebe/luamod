@@ -15,6 +15,7 @@ package.cpath = sdbs.cpath.."?.so;"
 -- Пишет в stdout, для отладки токо
 sdbs.flag = {
     C_LOG = true,
+    lock_server = false,
     geo_country = false,
     geo_city = false,
 }
@@ -55,6 +56,7 @@ sdbs.fn:load('sql')
 
 function onInit()
     setautoteam(false)
+    sdbs.flag.lock_server = sdbs.cnf.lock_server
     sdbs.flag.C_LOG = sdbs.cnf.c_log
     sdbs.log:w("Map autoteam is  "..tostring(getautoteam()))
     sdbs.cnf.map.say.load_map = false
@@ -74,11 +76,6 @@ end
 
 function onDestroy()
     sdbs.flag.C_LOG = true
-    if sdbs.sql.cdb then
-        sdbs.sql.db:close()
-        sdbs.sql.handle:close()
-        sdbs.sql.driver = nil
-        sdbs.log:w("Deactivate driver MYSQL "..tostring(sdbs.sql.cdb))
-    end
+    sdbs.sql:destroy()
     sdbs.log:i("Destroy mod "..PLUGIN_NAME..' OK')
 end

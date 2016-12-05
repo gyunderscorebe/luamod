@@ -9,7 +9,7 @@ function onPlayerPreconnect (cn)
     return
 end
 --(int actor_cn)
-function onPlayerConnect(cn) 
+function onPlayerConnect(cn)
     local ret = sdbs.cn:on_connect(cn)
     if ret == PLUGIN_BLOCK then return PLUGIN_BLOCK end
     return
@@ -33,7 +33,7 @@ function onPlayerRoleChange(cn, new_role, hash, pwd, isconnect)
     if ret == PLUGIN_BLOCK then return PLUGIN_BLOCK end
     return
 end
---(int target_cn, int actor_cn, bool gib, int gun) 
+--(int target_cn, int actor_cn, bool gib, int gun)
 -- Смерть игрока
 function onPlayerDeath(tcn,cn,gib,gun)
 

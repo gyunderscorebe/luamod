@@ -51,37 +51,38 @@ return {
                 if #args >=1 and self.parent.fn:trim(args[1]) == '-h' then self.parent.say:me(cn,self.parent.cnf.cmd.text.cmd_help) return true end
                 self.parent.say:me(cn,self.parent.cnf.cmd.text.cmd_text)
                 local list = ''
-                if self.parent.cn:chk_registered(cn) then
+                if self.parent.cn:chk_admin(cn) then
+                    list = string.format('%s%s%s%s%s',self.cmd.list.aviable, self.cmd.list.registered, self.cmd.list.referee, self.cmd.list.root, self.cmd.list.admin)
+                elseif self.parent.cn:chk_registered(cn) then
                     list = string.format('%s%s',self.cmd.list.aviable, self.cmd.list.registered)
                 elseif self.parent.cn:chk_referee(cn) then
                     list = string.format('%s%s%s',self.cmd.list.aviable, self.cmd.list.registered, self.cmd.list.referee)
                 elseif self.parent.cn:chk_root(cn) then
                     list = string.format('%s%s%s%s',self.cmd.list.aviable, self.cmd.list.registered, self.cmd.list.referee, self.cmd.list.root)
-                elseif self.parent.cn:chk_admin(cn) then
-                    list = string.format('%s%s%s%s%s',self.cmd.list.aviable, self.cmd.list.registered, self.cmd.list.referee, self.cmd.list.root, self.cmd.list.admin)
                 else
-                    self.parent.say:me(cn, self.cmd.list.aviable)
+                    list = self.cmd.list.aviable
                 end
-                self.parent.say:me(cn,list:sub(0,#list-4))
+                self.parent.say:me(cn,list:sub(2,#list-7))
             end
         },
 
         ['pm'] = {},
         ["$pm"] = {
-            protected = { true, true, true, true, true, false  },
+            protected = { true, true, true, true, true, false },
             cfn = function (self,cn, args)
                 self.parent.log:i("used $pm",cn)
                 if #args == 0 then
                     self.parent.say:me(cn,self.parent.cnf.cmd.text.pm_error) return
                 elseif #args >= 1 then
-                    if self.parent.fn:trim(args[1]) == '-h' then self.parent.say:me(cn,self.parent.cnf.cmd.text.pm_help) return true end
-                    local tcn, text = tonumber(args[1]), table.concat(args, " ", 2)
+                    local arg = self.parent.fn:trim(args[1])
+                    if arg == '-h' then self.parent.say:me(cn,self.parent.cnf.cmd.text.pm_help) return true end
+                    local tcn, text = tonumber(arg), table.concat(args, " ", 2)
                     if not isconnected(tcn) or not self.parent.cn:chk_cn(tcn) then self.parent.say:me(cn,self.parent.cnf.cmd.text.pm_error_cn) return true end
                     local dcn = self.parent.cn.data_cn[cn]
                     local name = self.parent.cn.data[dcn].name
                     local c_name = self.parent.cn.data[dcn].c_name
 
-                    text = self.parent.fn:colorize_text(text)
+                    text = self.parent.fn:format_say_text_out(text)
                     text = string.format('%s%s',self.parent.cnf.say.text.color,text)
 
                     if self.parent.cnf.cn.connect_set_cn_name then
@@ -102,29 +103,25 @@ return {
             protected = { true, true, true, true, true, false  },
             cfn = function (self,cn, args)
                 self.parent.log:i("used $sudo",cn)
-                if #args == 1 and args[1] == '-h' then self.parent.say:me(cn,self.parent.cnf.cmd.text.sudo_help) return end
-                if self.parent.cn:chk_admin(cn) and isadmin(cn) then
-                    setrole(cn,self.parent.cn:get_role('DEFAULT'), false)
+                if self.parent.cn:chk_admin(cn) and #args == 0 then
+                    --setrole(cn,self.parent.cn:get_role('DEFAULT'), false)
                     callhandler('onPlayerRoleChange',cn, self.parent.cn:get_role('DEFAULT'))
-                    self.parent.log:i("Chk disable ADMIN is "..tostring(self.parent.cn:chk_admin(cn)),cn)
-                elseif not self.parent.cn:chk_admin(cn) then
+                else
                     if #args >= 1 then
-                        local acn = self.parent.cn:get_admin()
-                        if acn ~= nil then
-                            setrole(acn,self.parent.cn:get_role('DEFAULT'), false)
-                            callhandler('onPlayerRoleChange',acn, self.parent.cn:get_role('DEFAULT'))
-                        end
                         local arg = self.parent.fn:trim(args[1])
+                        if arg == '-h' then self.parent.say:me(cn,self.parent.cnf.cmd.text.sudo_help) return end
+
                         local passwords = getadminpwds()
                         for _, password in pairs(passwords) do
                             if arg == password then
-                                setrole(cn,self.parent.cn:get_role('ADMIN'), false)
+                                --[[local acn = self.parent.cn:get_admin()
+                                if acn ~= nil then
+                                    --setrole(acn,self.parent.cn:get_role('DEFAULT'), false)
+                                    callhandler('onPlayerRoleChange',acn, self.parent.cn:get_role('DEFAULT'))
+                                end
+                                --setrole(cn,self.parent.cn:get_role('ADMIN'), false)]]
                                 callhandler('onPlayerRoleChange',cn, self.parent.cn:get_role('ADMIN'))
                                 break
-                            else
-                                self.parent.say:me(cn,self.parent.cnf.cmd.text.sudo_error_valid)
-                                self.parent.log:w(self.parent.cnf.cmd.text.sudo_error_valid,cn)
-                                return
                             end
                         end
                     else
@@ -153,12 +150,80 @@ return {
                     arg = tonumber(arg)
                     if arg < 1 or arg > 60 then self.parent.say:me(cn,self.parent.cnf.cmd.text.maptime_error) return true end
                     settimeleft(arg)
-                    self.parent.say:me(cn,string.format('%s$g',self.parent.cnf.cmd.text.maptime_text,arg))
+                    self.parent.say:me(cn,string.format(self.parent.cnf.cmd.text.maptime_text,arg))
                 end
             end
-        }
-    },
+        },
 
+        -- ROOT --
+
+        ['su'] = {},
+        ["$su"] = {
+            protected = { true, true, false, false, false, false },
+            cfn = function (self,cn, args)
+                self.parent.log:i("used $su",cn)
+                if #args == 0 then
+                    self.parent.say:me(cn,self.parent.cnf.cmd.text.su_error) return
+                elseif #args >= 1 then
+                    local tcn = self.parent.fn:trim(args[1])
+                    if tcn == '-h' then self.parent.say:me(cn,self.parent.cnf.cmd.text.su_help) return end
+
+                    tcn = tonumber(tcn)
+
+                    if not self.parent.cn:chk_cn(tcn) or not isconnected(tcn) then
+                        self.parent.say:me(cn,self.parent.cnf.cmd.text.su_no_user) return
+                    end
+
+                    if #args == 1 then callhandler('onPlayerRoleChange',tcn, self.parent.cn:get_role_cn(cn)) return end
+
+                    local role = self.parent.fn:trim(args[2])
+
+                    if  self.parent.cn:get_role(role) == self.parent.cn:get_role('DEFAULT') then
+                        callhandler('onPlayerRoleChange',tcn, self.parent.cn:get_role('DEFAULT'))
+                        return
+                    end
+                    if  self.parent.cn:get_role(role) == self.parent.cn:get_role('ADMIN') then
+                        callhandler('onPlayerRoleChange',tcn, self.parent.cn:get_role('ADMIN'))
+                        return
+                    end
+                    if  self.parent.cn:get_role(role) == self.parent.cn:get_role('ROOT') then
+                        callhandler('onPlayerRoleChange',tcn, self.parent.cn:get_role('ROOT'))
+                        return
+                    end
+                    if  self.parent.cn:get_role(role) == self.parent.cn:get_role('REFEREE') then
+                        callhandler('onPlayerRoleChange',tcn, self.parent.cn:get_role('REFEREE'))
+                        return
+                    end
+                    if  self.parent.cn:get_role(role) == self.parent.cn:get_role('REGISTERED') then
+                        callhandler('onPlayerRoleChange',tcn, self.parent.cn:get_role('REGISTERED'))
+                        return
+                    end
+                end
+                    --return PLUGIN_BLOC
+                    --if not isadmin(cn) then setrole(cn,self.parent.cn.get_role('ADMIN'), false) end
+            end
+        },
+
+        ['useradd'] = {},
+        ["$useradd"] = {
+            protected = { true, true, false, false, false, false  },
+            cfn = function (self,cn, args)
+                self.parent.log:i("used $useradd",cn)
+                if #args == 0 then
+                    self.parent.say:me(cn,self.parent.cnf.cmd.text.useradd_error) return true
+                elseif #args >= 1 then
+                    local arg = self.parent.fn:trim(args[1])
+                    if arg == '-h' then self.parent.say:me(cn,self.parent.cnf.cmd.text.useradd_help) return true end
+
+
+                    name = arg[1] or self.parent.cn.data[self.parent.cn.data_cn[cn]].name
+
+                    -- name, role, password
+                    self.parent.sql:query(string.format('NSERT INTO user VALUES (\'%s\', \'%s\')]]', arg[1],arg[2],arg[3]))
+                end
+            end
+        },
+    },
 
     init = function(self,obj)
         self.parent = obj
@@ -176,13 +241,13 @@ return {
                 if self.commands[k].protected[5] then
                     self.list.aviable = string.format('\2%s \f4| \f2%s', k, self.list.aviable)
                 elseif self.commands[k].protected[4] then
-                    self.list.registered = string.format('\f1%s \f4| \f1%s', k, self.list.registered)
+                    self.list.registered = string.format('\f0%s \f4| \f0%s', k, self.list.registered)
                 elseif self.commands[k].protected[3] then
-                    self.list.referee = string.format('\f0%s \f4| \f0%s', k, self.list.referee)
+                    self.list.referee = string.format('\f1%s \f4| \f1%s', k, self.list.referee)
                 elseif self.commands[k].protected[2] then
                     self.list.root = string.format('\f9%s \f4| \f9%s', k,self.list.root)
                 elseif self.commands[k].protected[1] then
-                    self.list.admin = string.format('\3%s \f4| \f3%s', k, self.list.admin)
+                    self.list.admin = string.format('\f3%s \f4| \f3%s', k, self.list.admin)
                 end
             end
         end

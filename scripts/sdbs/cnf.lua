@@ -2,14 +2,18 @@
 
 return {
 
+    lock_server = true,
+
     c_log = true,
+
     disable_log_chk_mtr_autoteam = false,
 
-    show_mod = false,
+    show_mod = true,
 
     sql = {
         flag = true,
-        driver = 'luasql.mysql',
+        library = 'luasql.mysql',
+        driver = 'mysql',
         db_name = 'sdbs_ac_gema',
         user = 'sdbs_ac_gema',
         pwd = 'sdbs_ac_gema',
@@ -34,6 +38,9 @@ return {
 
     say = {
         text = {
+
+            lock_server_message = '\f3%s \f1player trying to enter a locked server.',
+
             privat_prefix = '\f7Privat message from ',
             color = SAY_TEXT,
 
@@ -71,11 +78,14 @@ return {
             name_same_message = '\f3%s \fP- this name is already used by a player, present here. It is prohibited by the rules.',
             name_old_same_message = '\f3%s \fP- this name is already used by players who are here. It is prohibited by the rules.',
 
-            admin_rename_message = "Player \f3%s \f2tried to become an administrator. Follow the rules, too use role.",
-            admin_rename_kick_message = "\f9Administrator can not change the name \f3!!! \f9It is prohibited by the rules.",
+            role_rename_message = "Player \f3%s \f2tried to become an registered. Follow the rules, too use role.",
+            role_rename_kick_message = "\f9Registered can not change the name \f3!!! \f9It is prohibited by the rules.",
 
-            admin_role_change_admin_message_1 = "%s \f2has become the administrator of the game. \f3!!!",
-            admin_role_change_admin_message_0 = "%s \f2administrator has become a regular player. \f3!!!",
+            role_change_admin_message_1 = "%s \f2has become the administrator of the game. \f3!!!",
+            role_change_admin_message_0 = "%s \f2administrator has become a regular player. \f3!!!",
+
+            role_change_me_message_0 = "You have this role \f3%s !!!",
+            role_change_me_message_1 = 'You change of \f0%s',
 
             chk_commands_fix_message = '\f2Invalid command call, Enter the \f3$HELP \f2to view a list of commands available to you.',
             chk_commands_not_alloved_message = 'You do not have rights to view.'
@@ -167,11 +177,20 @@ return {
 
             maptime_help = 'System time of server \f1Format: \f0$maptime <MINUTE>. \f10 < MINUTE <= 60',
             maptime_error = 'Invalid command call, Enter the \f3 $pm -h \f2for reference.',
-            maptime_text = 'Established a new time \f9maps \f2= \f0',
+            maptime_text = 'Established a new time \f9maps \f2= \f0%g',
 
-            sudo_help = 'Set admin role. \f1Format: \f0$sudo <PASSWD> \f2or \f0$sudo \f2for disable admin role',
+            sudo_help = 'Set player role. \f1Format: \f0$sudo <PASSWD> \f2or \f0$sudo \f2for disable player role',
             sudo_error_valid = 'Not valid password !!!',
-            sudo_error_empty = 'Empty PASSWORD !!!'
+            sudo_error_empty = 'Empty PASSWORD !!!',
+
+            su_help = 'Delegation roles. \f1Format\f2: \f0$su <CN> [<FLAG>]\f2. <FLAG> = [<admin or ad or 1>, <root or rot or 50>, <referee or ref or 51>, <registered or reg or 52>, <default or def or 0>]. \f9If not<FLAG> then delegation your role. If you admin, then your role disabled\f2.',
+            su_error = 'Invalid command call, Enter the \f3 $su -h \f2for reference.',
+            su_no_user = 'This user has no !!!',
+            su_no_valid_pwd = 'Not valid password !!!',
+            su_empty_pwd = 'Empty password !!!',
+
+            useradd_error = 'Invalid command call, Enter the \f3 $useradd -h \f2for reference.',
+            useradd_help = 'Invalid command call, Enter the \f3 $useradd -h \f2for reference.',
 
         }
 
@@ -184,13 +203,14 @@ return {
         auto_kick_name_say = true,
         -- лист запрещенных составляющих имени
         auto_kick_name_list = {
-           'idiot', 'unarm', 'bich', 'stef', 'trol', 'tm'
+           'idiot', 'unarm', 'bich', 'stef', 'trol', 'scuchka'
         },
 
         -- использовать расщирение имени когда он что то сообщает кому то или всем
-        connect_set_cn_name = true,
+        connect_set_cn_name = false,
         -- format имени игрока когда он что то сообщает кому то или всем
-        connect_set_cn_name_format = '(%g) %s: ',
+        connect_set_cn_name_format = '(%s) %s: ',
+        connect_set_default_name_format = '%s: ',
         -- у каждого игрока свой цвет имени на весь connect
         connect_set_color_name = true,
         connect_set_colorize_char_name = false,
@@ -237,22 +257,24 @@ return {
         -- сказать всем что запрещено переименование
         not_rename_say = true,
 
-        -- запретить или разрешить переименование админу если он в этой роли
-        rename_admin = false,
-        -- сказать всем что что админ нарушил правила но не выкидывая его
-        rename_admin_say = true,
-        -- выкинуть админа при перименовании если он в роли
-        rename_admin_kick = true,
+        -- запретить или разрешить переименование пользователю если он в роли
+        rename_role = false,
+        -- сказать всем зарегистрированный юзер нарушил правила но не выкидывая его
+        rename_role_say = true,
+        -- выкинуть зарегистрированного узера при перименовании если он в роли
+        rename_role_kick = true,
         -- сказать об этом всем что его выкинули
-        rename_admin_kick_say = true,
+        rename_role_kick_say = true,
 
-        -- следить за сменой имени админа, пока он админ и убрать привилегию
-        rename_chk_admin = true,
+        -- следить за сменой имени узера, пока он зарегестрированный и убрать привилегию
+        rename_chk_role = true,
         -- сообщить что ты не можеш сменить роль, т.к. нарушил правила
-        rename_chk_admin_say = true,
+        rename_chk_role_say = true,
 
+        -- сказать мне какая у меня теперь роль
+        role_change_me_say = true,
         -- сказать всем что админ сменил роль
-        admin_role_change_say = true,
+        role_change_admin_say = true,
 
         --разрешить одинаковые имена
         name_same = false,

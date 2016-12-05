@@ -132,8 +132,8 @@ return {
         return C_CN_CODES[math.random(1, #C_CN_CODES)]
     end,
 
-    colorize_text = function(self,text)
-        return string.gsub(text,"\\f","\f")
+    format_say_text_out = function(self,text)
+        return string.gsub(string.gsub(string.gsub(string.gsub(text,"\\f","\f"),'\\F','\f'),'\\n','\n'),'\\t','\t')
     end,
 --[[
     colorize_text = function (self,text)
