@@ -408,6 +408,13 @@ return {
                             self.parent.log:w('TMR REMOVE N - '..tostring(self.data[dcn].tmr_connect_say),cn)
                             self.data[dcn].tmr_connect_say = nil
                         end
+                        --[[for i = 0, maxclient() -1 do
+                            if self.data[i].tmr_connect_say ~= nil then
+                                self.parent.log:w('TMR FORCE REMOVE N - '..tostring(self.data[i].tmr_connect_say),i)
+                                tmr.remove(self.data[i].tmr_connect_say)
+                            end
+                        end]]
+
                         self.parent.log:w('chk TMR REMOVE N '..tostring(self.data[dcn].dcn)..' TMR = '..tostring(self.data[dcn].tmr_connect_say),cn)
                     end
 
@@ -433,6 +440,7 @@ return {
     on_connect = function(self,cn)
         sdbs.log:i('Connect...', cn)
         if isconnected(cn) then
+
             if self.d_force.cn ~= nil and self.d_force.cn == cn then
                 self.parent.log:w('Connect NO. disconnect reasson: '..(self:get_d_reasson(self.d_force.reasson)),cn)
                 self:force_disconnect(self.d_force.cn,self.d_force.reasson, self.d_force.message )
@@ -514,6 +522,7 @@ return {
                 end
 
                 self.parent.say:all(say_disconnect)
+
 
             end
 
@@ -733,7 +742,7 @@ return {
             if self.parent.cnf.cn.connect_set_cn_name then
                 name = string.format(self.parent.cnf.cn.connect_set_cn_name_format,tostring(cn),name)
             else
-                name = string.format(self.parent.cnf.cn.connect_set_cn_name_format,name)
+                name = string.format(self.parent.cnf.cn.connect_set_default_name_format,name)
             end
             text = string.format('%s%s%s',c_name,name,text)
             self.parent.say:allexme(cn,self.parent.fn:format_say_text_out(text))

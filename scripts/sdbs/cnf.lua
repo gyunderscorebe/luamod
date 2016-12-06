@@ -217,7 +217,7 @@ return {
         auto_kick_name_say = true,
         -- лист запрещенных составляющих имени
         auto_kick_name_list = {
-           'idiot', 'unarm', 'bich', 'stef', 'trol', 'scuchka'
+           'idiot', 'unarm', 'bich', 'stef', 'trol', 'scuchka', 'lol', 'l0l', 'loi', 'l0i', 'l0|', 'lo|'
         },
 
         -- использовать расщирение имени когда он что то сообщает кому то или всем

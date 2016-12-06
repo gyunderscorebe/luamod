@@ -88,8 +88,9 @@ return {
             if r ~= nil then
                 self.parent.log:i(string.format("Player found. Name: %s", r[1]))
                 if passwd == tostring(r[2]) then
-                    self.parent.log:i(string.format("Access is allowed Name: %s", r[1]))
-                    local ff, cc =  self:query(string.format('UPDATE `user` SET `date_login`= now()'))
+                    self.parent.log:w(string.format("Access is allowed Name: %s", r[1]))
+                    local ff, cc =  self:query(string.format('UPDATE `user` SET `user`.`date_login`= now() WHERE `name` = \'%s\'',tostring(r[1])) )
+                    --`name`= ( SELECT `name` FROM `user` WHERE `user`.`name` = \'%s\'
                     if ff then
                         self.parent.log:i("Update dtimestamp OK")
                     else
