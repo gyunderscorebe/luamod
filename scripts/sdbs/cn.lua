@@ -285,6 +285,7 @@ return {
                 city = '',
                 geo = '',
                 role = nil,
+                login = false,
                 show_mod = false,
                 tmr_connect_say = nil
             })
@@ -524,6 +525,8 @@ return {
                 self.d_force.message = nil
             end
 
+            if self.parent.flag.lock_server and #self.data == 0 then self.parent.flag.lock_server = false  end
+
             self.parent.log:i('Disconnect OK',cn)
             if self.parent.flag.C_LOG then self:get_chk_data_cn() end
         else
@@ -642,7 +645,10 @@ return {
                             end
                         else
 
-                            if isadmin(cn) then setrole(cn,self:get_role('DEFAULT')) end
+                            if isadmin(cn) and self.parent.cnf.cn.role_change_admin_say then
+                                self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.role_change_admin_message_0,c_name..name))
+                                setrole(cn,self:get_role('DEFAULT'))
+                            end
 
                             if new_role == self:get_role('ROOT') then
 

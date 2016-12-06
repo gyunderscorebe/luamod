@@ -2,8 +2,6 @@
 
 return {
 
-    lock_server = true,
-
     c_log = true,
 
     disable_log_chk_mtr_autoteam = false,
@@ -18,7 +16,15 @@ return {
         user = 'sdbs_ac_gema',
         pwd = 'sdbs_ac_gema',
         host = 'localhost',
-        port = '3306'
+        port = '3306',
+        close_connect_db_autotime = 10000,
+        text = {
+            user_add = '\f0Player \f1%s\f0, \f3added\f0. Assigned the role of \f3%s',
+            user_del = '\f2Player \f1%s\f2, \f3deleted.',
+            user_found = '\f2Player \f1%s\f2, \0found.',
+            user_not_found = '\f2Player \f1%s\f2, \f0not found.',
+            access_not_permitted = "Access is \f3not permitted \f2Name: \f1%s",
+        }
     },
 
     geo = {
@@ -165,6 +171,8 @@ return {
 
             about_help = '\f1Summary Clan of Frends',
 
+            cmd_error = 'Invalid command call, Enter the \f3 $%s -h \f2for reference.',
+
             help_help = '\f1Tips for working with the console commands',
             help_text = '\fPTo display a list of commands, depending of type of access level, type \f0$cmd \fPconsole. For more information on individual commands, enter \f0$<command> -h',
 
@@ -172,25 +180,28 @@ return {
             cmd_text = '\fPFor more information on individual commands, enter \f0$<command> -h',
 
             pm_help = "\fPPrivat message. \f2Format: \f0$pm <CN> <TEXT>",
-            pm_error = 'Invalid command call, Enter the \f3 $pm -h \f2for reference.',
             pm_error_cn = '\fPThis user has no \f3!!!',
 
             maptime_help = 'System time of server \f1Format: \f0$maptime <MINUTE>. \f10 < MINUTE <= 60',
-            maptime_error = 'Invalid command call, Enter the \f3 $pm -h \f2for reference.',
             maptime_text = 'Established a new time \f9maps \f2= \f0%g',
 
             sudo_help = 'Set player role. \f1Format: \f0$sudo <PASSWD> \f2or \f0$sudo \f2for disable player role',
             sudo_error_valid = 'Not valid password !!!',
             sudo_error_empty = 'Empty PASSWORD !!!',
+            sudo_login = '\f0You have successfully logged in. Enter the \f1$cmd \f0to view the available commands. \f3Attention\f0, including statistics.',
 
-            su_help = 'Delegation roles. \f1Format\f2: \f0$su <CN> [<FLAG>]\f2. <FLAG> = [<admin or ad or 1>, <root or rot or 50>, <referee or ref or 51>, <registered or reg or 52>, <default or def or 0>]. \f9If not<FLAG> then delegation your role. If you admin, then your role disabled\f2.',
-            su_error = 'Invalid command call, Enter the \f3 $su -h \f2for reference.',
+            su_help = 'Delegation roles. \f1Format\f2: \f0$su <CN> [<FLAG>]\f2. <FLAG> = [<admin or ad or 1>, <root or rot or 50>, <referee or ref or 51>, <registered or reg or 52>, <default or def or 0>]\f2. \f3If not<FLAG> then delegation your role. If you admin, your role disabled\f2.',
+
             su_no_user = 'This user has no !!!',
             su_no_valid_pwd = 'Not valid password !!!',
             su_empty_pwd = 'Empty password !!!',
 
-            useradd_error = 'Invalid command call, Enter the \f3 $useradd -h \f2for reference.',
-            useradd_help = 'Invalid command call, Enter the \f3 $useradd -h \f2for reference.',
+            lock_help = 'Blocking input to the server. He works as a switch. There are 2 options. -h <HELP> and -s <STATUS>. Other prametry not required.',
+            lock_text_0 = '\f1Server \f3locked',
+            lock_text_1 = '\f1Server \f0unlocked',
+
+            useradd_help = 'Adding Player. \f1Format\f2: \f0$su <NAME> [<FLAG>] <PASSWORD>\f2. <FLAG> = [<admin or ad or 1>, <root or rot or 50>, <referee or ref or 51>, <registered or reg or 52>, <default or def or 0>]\f2.',
+            userdel_help = 'Remove a player. \f1Format\f2: \f0$su <NAME>\f2.',
 
         }
 
@@ -262,7 +273,7 @@ return {
         -- сказать всем зарегистрированный юзер нарушил правила но не выкидывая его
         rename_role_say = true,
         -- выкинуть зарегистрированного узера при перименовании если он в роли
-        rename_role_kick = true,
+        rename_role_kick = false,
         -- сказать об этом всем что его выкинули
         rename_role_kick_say = true,
 

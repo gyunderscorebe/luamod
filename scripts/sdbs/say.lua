@@ -18,8 +18,9 @@ return {
     allexme = function(self,cn,text)
         if self.parent.cnf.show_mod then self:out(-1,text,cn) end
     end,
-    all = function(self,text)
-        if self.parent.cnf.show_mod then self:out(-1,text) end
+    all = function(self,text,cn)
+        cn = cn or -1
+        if self.parent.cnf.show_mod then self:out(cn,text) end
     end,
 
     init = function(self,obj)
