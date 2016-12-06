@@ -12,15 +12,15 @@ return {
     end,
     buff = {},
     --save in buffer
-    set_buff = function(self, flag, text,cn )        
+    set_buff = function(self, flag, text,cn )
         table.insert(self.buff, { flag = flag, text = text, cn = cn } )
     end,
     -- info
-    ib = function (self,text, cn) if self.parent.flag.C_LOG then self:set_buff(LOG_INFO, text, cn) end end,
+    ib = function (self,text, cn) if self.parent.flag.C_LOG and self.parent.flag.C_LOG_info then self:set_buff(LOG_INFO, text, cn) end end,
     --warning
-    wb = function (self,text, cn) if self.parent.flag.C_LOG then self:set_buff(LOG_WARN, text, cn) end end,
+    wb = function (self,text, cn) if self.parent.flag.C_LOG and self.parent.flag.C_LOG_warn then self:set_buff(LOG_WARN, text, cn) end end,
     --error
-    eb = function (self,text, cn) if self.parent.flag.C_LOG then self:set_buff(LOG_ERR, text, cn) end end,
+    eb = function (self,text, cn) if self.parent.flag.C_LOG and self.parent.flag.C_LOG_error then self:set_buff(LOG_ERR, text, cn) end end,
     --flush buff
     fb = function(self)
         if self.parent.C_LOG then
@@ -34,12 +34,12 @@ return {
         end
     end,
     -- info
-    i = function (self,text, cn) if self.parent.flag.C_LOG then self:text_log(LOG_INFO,text,cn) end end,
+    i = function (self,text, cn) if self.parent.flag.C_LOG and self.parent.flag.C_LOG_info then self:text_log(LOG_INFO,text,cn) end end,
     --warning
-    w = function (self,text, cn) if self.parent.flag.C_LOG then self:text_log(LOG_WARN, text, cn) end end,
+    w = function (self,text, cn) if self.parent.flag.C_LOG and self.parent.flag.C_LOG_warn then self:text_log(LOG_WARN, text, cn) end end,
     --error
-    e = function (self,text, cn) if self.parent.flag.C_LOG then self:text_log(LOG_ERR, text, cn) end end,
-    
+    e = function (self,text, cn) if self.parent.flag.C_LOG and self.parent.flag.C_LOG_error then self:text_log(LOG_ERR, text, cn) end end,
+
     init = function(self,obj)
         self.parent = obj
 	    if self.parent.flag.C_LOG then self:i('Module log init OK') end

@@ -259,7 +259,7 @@ return {
                 return  PLUGIN_BLOCK
             end
         else
-            sdbs.log:i('Preconnect NO', cn)
+            sdbs.log:w('Preconnect NO', cn)
             --return PLUGIN_BLOCK
             return
         end
@@ -422,7 +422,7 @@ return {
                 end
             end
 
-            self.parent.log:i('AddCn OK',cn)
+            self.parent.log:w('AddCn OK',cn)
             return true
         else
             self.parent.log:i('Not add data cn, cn ~= nil AddCn NO',cn)
@@ -434,7 +434,7 @@ return {
         sdbs.log:i('Connect...', cn)
         if isconnected(cn) then
             if self.d_force.cn ~= nil and self.d_force.cn == cn then
-                self.parent.log:i('Connect NO. disconnect reasson: '..(self:get_d_reasson(self.d_force.reasson)),cn)
+                self.parent.log:w('Connect NO. disconnect reasson: '..(self:get_d_reasson(self.d_force.reasson)),cn)
                 self:force_disconnect(self.d_force.cn,self.d_force.reasson, self.d_force.message )
                 return
                 -- PLUGIN_BLOCK
@@ -445,13 +445,13 @@ return {
             return true
         else
             if self.parent.flag.C_LOG then self:get_chk_data_cn() end
-            self.parent.log:i('Connect NO',cn)
+            self.parent.log:w('Connect NO',cn)
             return false
         end
     end,
 
     force_disconnect = function(self,cn,reasson,message)
-        self.parent.log:i('Force_disconnect',cn)
+        self.parent.log:w('Force_disconnect',cn)
         if isconnected(cn) then
             callhandler('onPlayerDisconnect',cn,reasson)
             disconnect(cn,reasson)
@@ -483,7 +483,7 @@ return {
             end
             self.parent.log:i('RemoveCn OK',cn)
         else
-            self.parent.log:i('Not is CN for remove data cn. RemoveCn NO',cn)
+            self.parent.log:w('Not is CN for remove data cn. RemoveCn NO',cn)
         end
     end,
 
@@ -527,10 +527,10 @@ return {
 
             if self.parent.flag.lock_server and #self.data == 0 then self.parent.flag.lock_server = false  end
 
-            self.parent.log:i('Disconnect OK',cn)
+            self.parent.log:w('Disconnect OK',cn)
             if self.parent.flag.C_LOG then self:get_chk_data_cn() end
         else
-            self.parent.log:i('Disconnect NO',cn)
+            self.parent.log:w('Disconnect NO',cn)
             if self.parent.flag.C_LOG then self:get_chk_data_cn() end
         end
         return true
@@ -556,7 +556,7 @@ return {
             end
 
             if not self.parent.cnf.cn.rename then
-                self.parent.log:i('Check rename. KICK OK',cn)
+                self.parent.log:w('Check rename. KICK OK',cn)
                 self.d_force.cn = cn
                 self.d_force.reasson = self:get_d_reasson('AUTOKICK')
                 if self.parent.cnf.cn.not_rename_say then
@@ -594,7 +594,7 @@ return {
     on_role_change = function(self,cn, new_role, hash, pwd, isconnect)
 
         --print(cn) print(new_role) print(hash) print(pwd) print(isconnect)
-        self.parent.log:w('Role change...',cn)
+        self.parent.log:i('Role change...',cn)
         if self:chk_cn(cn) then
             --self.parent.log:w(string.format('Change args: cn: %s, new_role: %s, hash: %s, pwd: %s, isconnect: %s',tostring(cn),self:get_role(new_role),tostring(hash),tostring(pwd),tostring(isconnect)),cn)
 
@@ -604,7 +604,7 @@ return {
 
             if not self.parent.cnf.cn.rename_role and #self.data[dcn].oldname ~= 0 then
                 if self.parent.cnf.cn.rename_role_kick then
-                    self.parent.log:i('Check role rename in role change. KICK OK',cn)
+                    self.parent.log:w('Check role rename in role change. KICK OK',cn)
                     self.d_force.cn = cn
                     self.d_force.reasson = self:get_d_reasson('AUTOKICK')
                     if self.parent.cnf.cn.rename_role_kick_say then
@@ -747,7 +747,7 @@ return {
         self.parent = obj
         --self.parent = setmetatable( {}, { __index = obj } )
         --self.parent = setmetatable( {}, { __index = obj, __newindex = obj } )
-        self.parent.log:i('Module cn init OK')
+        self.parent.log:w('Module cn init OK')
     end
 
 }

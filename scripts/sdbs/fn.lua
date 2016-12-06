@@ -150,7 +150,7 @@ return {
         if self.parent[name].init ~= nil then
             self.parent[name]:init(self.parent)
         else
-            if self.parent.C_LOG then logline(2,string.format('SDBS: Player SYSTEM says: Module %s init OK',name)) end
+            if self.parent.C_LOG  then logline(2,string.format('SDBS: Player SYSTEM says: Module %s init OK',name)) end
         end
     end,
 

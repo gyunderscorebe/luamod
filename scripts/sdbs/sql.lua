@@ -25,7 +25,7 @@ return {
             self.parent.log:w("Activate driver "..self.parent.cnf.sql.driver)
 
         else
-            self.parent.log:i('Not active driver '..self.parent.cnf.sql.driver..'. Disabled. ')
+            self.parent.log:w('Not active driver '..self.parent.cnf.sql.driver..'. Disabled. ')
         end
     end,
 
@@ -89,6 +89,13 @@ return {
                 self.parent.log:i(string.format("Player found. Name: %s", r[1]))
                 if passwd == tostring(r[2]) then
                     self.parent.log:i(string.format("Access is allowed Name: %s", r[1]))
+                    local ff, cc =  self:query(string.format('UPDATE `user` SET `date_login`= now()'))
+                    if ff then
+                        self.parent.log:i("Update dtimestamp OK")
+                    else
+                        self.parent.log:e(string.format("Update dtimestamp NO ERR: %s", cc))
+                    end
+                    self.parent.log:w(string.format("Login istablished: %s", r[1]))
                     return tonumber(r[3])
                 else
                     self.parent.log:i(string.format("Access is not permitted Name: %s", r[1]))

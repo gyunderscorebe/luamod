@@ -3,6 +3,9 @@
 return {
 
     c_log = true,
+    c_log_info = false,
+    c_log_warn = true,
+    c_log_error = true,
 
     disable_log_chk_mtr_autoteam = false,
 

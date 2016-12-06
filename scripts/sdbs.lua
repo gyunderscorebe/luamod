@@ -15,6 +15,9 @@ package.cpath = sdbs.cpath.."?.so;"
 -- Пишет в stdout, для отладки токо
 sdbs.flag = {
     C_LOG = true,
+    C_LOG_info = false,
+    C_LOG_warn = false,
+    C_LOG_error = false,
     lock_server = false,
     geo_country = false,
     geo_city = false,
@@ -58,6 +61,9 @@ function onInit()
     setautoteam(false)
     sdbs.flag.lock_server = sdbs.cnf.lock_server
     sdbs.flag.C_LOG = sdbs.cnf.c_log
+    sdbs.flag.C_LOG_info = sdbs.cnf.c_log_info
+    sdbs.flag.C_LOG_warn = sdbs.cnf.c_log_warn
+    sdbs.flag.C_LOG_error = sdbs.cnf.c_log_error
     sdbs.log:w("Map autoteam is  "..tostring(getautoteam()))
     sdbs.cnf.map.say.load_map = false
     callhandler('onMapChange', getmapname(), getgamemode())

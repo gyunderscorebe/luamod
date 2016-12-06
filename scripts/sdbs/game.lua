@@ -146,12 +146,12 @@ return {
                 if  self:is_gema_map() then
                     if getautoteam() ~=  self.parent.parent.cnf.map.team.auto.gema then
                         setautoteam(self.parent.parent.cnf.map.team.auto.gema)
-                        self.parent.parent.log:w("Map SET autoteam "..tostring(getautoteam()))
+                        self.parent.parent.log:i("Map SET autoteam "..tostring(getautoteam()))
                     end
                 else
                     if getautoteam() ~=  self.parent.parent.cnf.map.team.auto.map then
                         setautoteam(self.parent.parent.cnf.map.team.auto.map)
-                        self.parent.parent.log:w("Map SET autoteam "..tostring(getautoteam()))
+                        self.parent.parent.log:i("Map SET autoteam "..tostring(getautoteam()))
                     end
                 end
             else
@@ -159,7 +159,7 @@ return {
             end
 
             -- проверка мтр аутотеам
-            if not self.parent.parent.cnf.disable_log_chk_mtr_autoteam_ then self.parent.parent.log:w("Map tmr chk autoteam ... ") end
+            if not self.parent.parent.cnf.disable_log_chk_mtr_autoteam_ then self.parent.parent.log:i("Map tmr chk autoteam ... ") end
         end,
 
         on_map_change = function(self,name,mode)
@@ -169,10 +169,10 @@ return {
             end
 
             self:set_info(name, mode)
-            self.parent.parent.log:w('Map: name '..self.name..' mode  '..self.mode_str..' is gema '..tostring(self.mode_gema)..' preset autoteam '..tostring(getautoteam()) )
+            self.parent.parent.log:i('Map: name '..self.name..' mode  '..self.mode_str..' is gema '..tostring(self.mode_gema)..' preset autoteam '..tostring(getautoteam()) )
             self:set_auto_team(name, mode)
             sdbs.gm.map:say(name, mode)
-            self.parent.parent.log:w("Map postset autoteam "..tostring(getautoteam()))
+            self.parent.parent.log:i("Map postset autoteam "..tostring(getautoteam()))
 
             if self.parent.parent.cnf.map.team.auto.chk_tmr then
                 if self.tmr_chk_autoteam then
@@ -327,6 +327,6 @@ return {
         self.mode.parent = self
         self.map.parent = self
         self.vote.parent = self
-        self.parent.log:i('GAME init OK')
+        self.parent.log:w('GAME init OK')
     end
 }
