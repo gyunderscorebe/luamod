@@ -75,15 +75,26 @@ return {
                     local name = self.parent.cn.data[dcn].name
                     local c_name = self.parent.cn.data[dcn].c_name
 
+                    --[[
                     text = self.parent.fn:format_say_text_out(text)
                     text = string.format('%s%s',self.parent.cnf.say.text.color,text)
-
                     if self.parent.cnf.cn.connect_set_cn_name then
                         name = string.format(self.parent.cnf.cn.connect_set_cn_name_format,tostring(cn),name)
                         text = string.format('%s%s%s%s',self.parent.cnf.say.text.privat_prefix,c_name,name,text)
                     end
+                    ]]
 
-                    self.parent.say:to(cn,tcn,text)
+                    text = string.format('%s%s',self.parent.cnf.say.text.color,text)
+                    if self.parent.cnf.cn.connect_set_cn_name then
+                        name = string.format(self.parent.cnf.cn.connect_set_cn_name_format,tostring(cn),name)
+                    else
+                        name = string.format(self.parent.cnf.cn.connect_set_default_name_format,name)
+                    end
+                    --text = string.format('%s%s%s%s',self.parent.cnf.say.text.privat_prefix,c_name,name,text)
+                    self.parent.say:to(cn,tcn,string.format('%s%s%s',self.parent.cnf.say.text.privat_prefix,c_name,name))
+                    self.parent.say:to(cn,tcn,self.parent.fn:format_say_text_out(text))
+
+                    --self.parent.say:to(cn,tcn,text)
                     --sayas(text,cn,false,false)
                     --return PLUGIN_BLOC
                     return
@@ -122,7 +133,6 @@ return {
                         end
 
                         if type(access) == 'number' then
-                            self.parent.cn.data[dcn].login = true
                             callhandler('onPlayerRoleChange',cn, access)
                             self.parent.say:me(cn,self.parent.cnf.cmd.text[self.name..'_login'] )
                         else
@@ -170,9 +180,9 @@ return {
             cfn = function (self,cn, args)
                 function s(self,cn)
                     if self.parent.flag.lock_server then
-                        self.parent.say:all(self.parent.cnf.cmd.text[self.name..'_text_0'],cn)
+                        self.parent.say:me(cn,self.parent.cnf.cmd.text[self.name..'_text_0'])
                     else
-                        self.parent.say:all(self.parent.cnf.cmd.text[self.name..'_text_1'],cn)
+                        self.parent.say:me(cn,self.parent.cnf.cmd.text[self.name..'_text_1'])
                     end
                 end
                 self.parent.log:i("used "..self.name,cn)
@@ -251,7 +261,8 @@ return {
                     if args[2] == nil or args[3] == nil then self.parent.say:me(cn,string.format(self.parent.cnf.cmd.text.cmd_error,self.name)) return end
                     local arg2,arg3 = self.parent.cn:get_role(self.parent.fn:trim(args[2])),self.parent.fn:trim(args[3])
                     local res = self.parent.sql:useradd(arg1,arg2,arg3)
-                    self.parent.say:me(cn,res) return
+                    self.parent.say:me(cn,res)
+                    return
 
                 end
                 self.parent.say:me(cn,string.format(self.parent.cnf.cmd.text.cmd_error,self.name)) return
@@ -267,8 +278,10 @@ return {
                 if #args ==1 then
                     local arg1 = self.parent.fn:trim(args[1])
                     if arg1 == '-h' then self.parent.say:me(cn,self.parent.cnf.cmd.text[self.name..'_help']) return end
-                    local res = self.parent.sql:userdel(tostring(arg1))
-                    self.parent.say:me(cn,res) return
+                    local res,flag = self.parent.sql:userdel(arg1)
+                    self.parent.say:me(cn,res)
+                    if flag then callhandler('onPlayerRoleChange',self.parent.cn:get_cn(arg1), self.parent.cn:get_role('DEFAULT')) end
+                    return
                 end
                 self.parent.say:me(cn,string.format(self.parent.cnf.cmd.text.cmd_error,self.name)) return
             end
@@ -289,11 +302,11 @@ return {
                 self.commands[k].parent = self.parent
                 self.commands[k].cmd = self
                 if self.commands[k].protected[5] then
-                    self.list.aviable = string.format('\2%s \f4| \f2%s', k, self.list.aviable)
+                    if k ~= '$sudo' then self.list.aviable = string.format('\2%s \f4| \f2%s', k, self.list.aviable) end
                 elseif self.commands[k].protected[4] then
-                    self.list.registered = string.format('\f0%s \f4| \f0%s', k, self.list.registered)
+                    if k ~= '$sudo' then self.list.registered = string.format('\f0%s \f4| \f0%s', k, self.list.registered) end
                 elseif self.commands[k].protected[3] then
-                    self.list.referee = string.format('\f1%s \f4| \f1%s', k, self.list.referee)
+                    if k ~= '$sudo' then self.list.referee = string.format('\f1%s \f4| \f1%s', k, self.list.referee) end
                 elseif self.commands[k].protected[2] then
                     self.list.root = string.format('\f9%s \f4| \f9%s', k,self.list.root)
                 elseif self.commands[k].protected[1] then

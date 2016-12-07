@@ -159,7 +159,7 @@ return {
             end
 
             -- проверка мтр аутотеам
-            if not self.parent.parent.cnf.disable_log_chk_mtr_autoteam_ then self.parent.parent.log:i("Map tmr chk autoteam ... ") end
+            if not self.parent.parent.cnf.disable_log_chk_mtr_autoteam then self.parent.parent.log:i("Map tmr chk autoteam ... ") end
         end,
 
         on_map_change = function(self,name,mode)

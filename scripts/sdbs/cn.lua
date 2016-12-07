@@ -147,6 +147,14 @@ return {
         end
         return nil
     end,
+    get_cn = function(self,name)
+        for _,v in ipairs(self.data) do
+            if v.name == name then
+                return v.cn
+            end
+        end
+        return nil
+    end,
     get_chk_data_cn = function(self,cn)
         if self:chk_cn(cn)  then
             self.parent.log:i('get_chk_data_cn',cn)
@@ -285,7 +293,6 @@ return {
                 city = '',
                 geo = '',
                 role = nil,
-                login = false,
                 show_mod = false,
                 tmr_connect_say = nil
             })
@@ -656,7 +663,7 @@ return {
 
                             if isadmin(cn) and self.parent.cnf.cn.role_change_admin_say then
                                 self.parent.say:allexme(cn,string.format(self.parent.cnf.say.text.role_change_admin_message_0,c_name..name))
-                                setrole(cn,self:get_role('DEFAULT'))
+                                setrole(cn,'DEFAULT')
                             end
 
                             if new_role == self:get_role('ROOT') then

@@ -2,7 +2,7 @@ PLUGIN_NAME = "aCmOdFoRvAh"
 PLUGIN_AUTHOR = "SDBS"
 PLUGIN_VERSION = "1.0.5"
 
--- reload lua as admin:  /serverextention lua::reload --
+-- reload lua as admin:  /serverextension lua::reload --
 
 sdbs = {
     path = "lua/scripts/sdbs/",

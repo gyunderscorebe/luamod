@@ -4,8 +4,8 @@ return {
 
     c_log = true,
     c_log_info = false,
-    c_log_warn = true,
-    c_log_error = true,
+    c_log_warn = false,
+    c_log_error = false,
 
     disable_log_chk_mtr_autoteam = false,
 
@@ -15,9 +15,9 @@ return {
         flag = true,
         library = 'luasql.mysql',
         driver = 'mysql',
-        db_name = 'sdbs_ac_gema',
-        user = 'sdbs_ac_gema',
-        pwd = 'sdbs_ac_gema',
+        db_name = 'sdbs_ac',
+        user = 'sdbs_ac',
+        pwd = 'sdbs_ac',
         host = 'localhost',
         port = '3306',
         close_connect_db_autotime = 10000,
@@ -50,7 +50,7 @@ return {
 
             lock_server_message = '\f3%s \f1player trying to enter a locked server.',
 
-            privat_prefix = '\f7Privat message from ',
+            privat_prefix = '\f3Private message from ',
             color = SAY_TEXT,
 
             about = '\n\f2INFORMATION\n\t\fPSITE: \f5http://vah-clan.ga\n\t\fPEMAIL: \f5admin@vah-clan.ga\n\t\fPIRC: \f5freenode #vah\n\t\fPWIKI: \f5http://wiki.cubers.net/action/view/VAH_clan\n\t\fPFORUM: \f5http://forum.cubers.net/thread-8744.html',
@@ -203,7 +203,7 @@ return {
             lock_text_0 = '\f1Server \f3locked',
             lock_text_1 = '\f1Server \f0unlocked',
 
-            useradd_help = 'Adding Player. \f1Format\f2: \f0$su <NAME> [<FLAG>] <PASSWORD>\f2. <FLAG> = [<admin or ad or 1>, <root or rot or 50>, <referee or ref or 51>, <registered or reg or 52>, <default or def or 0>]\f2.',
+            useradd_help = 'Adding Player. \f1Format\f2: \f0$su <NAME> [<FLAG>] <PASSWORD>\f2. <FLAG> = [<admin or ad or 1>, <root or rot or 50>, <referee or ref or 51>, <registered or reg or 52>]\f2.',
             userdel_help = 'Remove a player. \f1Format\f2: \f0$su <NAME>\f2.',
 
         }

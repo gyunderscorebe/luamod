@@ -92,35 +92,39 @@ return {
                     local ff, cc =  self:query(string.format('UPDATE `user` SET `user`.`date_login`= now() WHERE `name` = \'%s\'',tostring(r[1])) )
                     --`name`= ( SELECT `name` FROM `user` WHERE `user`.`name` = \'%s\'
                     if ff then
-                        self.parent.log:i("Update dtimestamp OK")
+                        self.parent.log:i("Update timestamp OK")
                     else
-                        self.parent.log:e(string.format("Update dtimestamp NO ERR: %s", cc))
+                        self.parent.log:e(string.format("Update timestamp NO ERR: %s", cc))
                     end
                     self.parent.log:w(string.format("Login istablished: %s", r[1]))
-                    return tonumber(r[3])
+                    return tonumber(r[3]), true
                 else
                     self.parent.log:i(string.format("Access is not permitted Name: %s", r[1]))
-                    return string.format(self.parent.cnf.sql.text.access_not_permitted, r[1])
+                    return string.format(self.parent.cnf.sql.text.access_not_permitted, r[1]), false
                 end
             else
                 self.parent.log:w(string.format("Player NOT found. Name: %s", name))
-                return  string.format(self.parent.cnf.sql.text.user_not_found,name)
+                return  string.format(self.parent.cnf.sql.text.user_not_found,name), false
             end
         else
             self.parent.log:e(string.format("Player NOT find. Name: %s MESS: %s", name,c))
-            return '\f3'..tostring(c)
+            return '\f3'..tostring(c), false
         end
     end,
 
     useradd = function(self,name,access,pwd)
         self.parent.log:w(string.format("Create player name: %s in DB", name))
+        if access == 0 or access == nil then
+            self.parent.log:i(string.format("Player not create. Role BAD for Name: %s", name))
+            return  string.format(string.format(self.parent.cnf.cmd.text.cmd_error,'useradd'),self.name), false
+        end
         local f, r =  self:query(string.format('INSERT INTO `user`(  `name`, `access`, `pwd` ) VALUES ( \'%s\', %s, \'%s\' );', name, access, pwd ))
         if f then
             self.parent.log:i(string.format("Player create. Name: %s", name))
-            return  string.format(self.parent.cnf.sql.text.user_add,name,self.parent.cn:get_role(access))
+            return  string.format(self.parent.cnf.sql.text.user_add,name,self.parent.cn:get_role(access)), true
         else
             self.parent.log:e(string.format("Player NOT create. Name: %s MESS: %s", name,r))
-            return '\f3'..tostring(r)
+            return '\f3'..tostring(r), false
         end
     end,
 
@@ -136,18 +140,18 @@ return {
                 local ff, cc =  self:query(string.format('DELETE FROM `user` WHERE `user`.`name` = \'%s\'', r[1]))
                 if ff then
                     self.parent.log:i(string.format("Player deleted. Name: %s", r[1]))
-                    return  string.format(self.parent.cnf.sql.text.user_del,r[1])
+                    return  string.format(self.parent.cnf.sql.text.user_del,r[1]), true
                 else
                     self.parent.log:e(string.format("Player NOT deleted. Name: %s MESS: %s", r[1],cc))
-                    return '\f3'..tostring(cc)
+                    return '\f3'..tostring(cc), false
                 end
             else
                 self.parent.log:w(string.format("Player NOT found. Name: %s", name))
-                return  string.format(self.parent.cnf.sql.text.user_not_found,name)
+                return  string.format(self.parent.cnf.sql.text.user_not_found,name), false
             end
         else
             self.parent.log:e(string.format("Player NOT deleted. Name: %s MESS: %s", name,c))
-            return '\f3'..tostring(c)
+            return '\f3'..tostring(c), false
         end
     end
 }
